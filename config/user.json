@@ -1,0 +1,9 @@
+{
+	"modules": [
+		{
+			"name": "Git Basic",
+			"source": "git_basic",
+			"type": "bash"
+		}
+	]
+}

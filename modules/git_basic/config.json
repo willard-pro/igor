@@ -1,0 +1,57 @@
+{
+	"required": {
+		"commands": [ 
+			"awk", 
+			"gh", 
+			"git", 
+			"sed" 
+		]
+	},
+	"menus": [
+		{
+			"menu": "main",
+			"options": [
+				{
+					"name": "Create Branch",
+					"command": "menu:create_branch"
+				},
+				{
+					"name": "Prune Local Branches",
+					"command": "clean_branches"
+				},
+			]
+		},
+		{
+			"menu": "create_branch",
+			"command": "create_branch",
+			"arguments": [
+				{
+					"options": "Select Branch",
+					"parameters": [
+						{
+							"options": [
+								{
+									"name": "Feature",
+									"value": "feature"
+								},
+								{
+									"name": "BugFix",
+									"value": "bugfix"
+								},
+							]
+
+						}
+					]
+				},
+				{
+					"prompt": "Enter Ticket Number",
+					"format": "number"
+				},
+				{
+					"prompt": "Enter Ticket Name",
+					"format": "string"
+				},
+			]
+		}
+	]
+}
