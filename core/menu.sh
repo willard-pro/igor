@@ -17,8 +17,30 @@ function banner() {
 }
 
 function menu() {
-    local menu_name=$1
+    local module_name=$1
+    local menu_name=$2
 
-    menu_options=$(jq -r '.menus[] | select(.menu == "$menu_name") | .options[].name' menu.json)
-    echo "$menu_options"
+    local module_config="$modules_dir/$module_name/config.json"
+
+    local menu_options=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .options[].name' < $module_config)
+    readarray -t options <<< "$menu_options"
+
+    echo
+    log INFO "Menu ${BOLD}$menu_name${RESET}"
+
+    PS3="Select action to take: "
+    select option in "${options[@]}"; do
+        if [[ " ${options[@]} " =~ " $option " ]]; then
+
+            local selected_command=$(jq -r --arg selected "$option" --arg menu_name "$menu_name"  '.menus[] | select (.menu == $menu_name) | .options[] | select (.name == $selected).command' < $module_config)
+
+            if [[ $selected_command == menu:* ]]; then
+                local sub_menu_name="${selected_command#menu:}"
+                prompt $module_name $sub_menu_name
+            fi
+            break
+        else
+            log ERROR "Invalid choice!"
+        fi
+    done
 }

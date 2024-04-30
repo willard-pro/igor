@@ -8,8 +8,9 @@ function check_prerequisists() {
     local mandatory=0
     local mandatory_failed=0
 
+
     local commands=$(jq -r '.required.commands | @sh' < $module_config | tr -d "'")
-    
+
     # Loop over the extracted commands
     for command in $commands; do
         ((mandatory++))
