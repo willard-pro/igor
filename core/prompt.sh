@@ -8,7 +8,7 @@ function prompt() {
     local module_config="$modules_dir/$module_name/config.json"
 
     local arguments=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .arguments' < $module_config)
-    readarray -t options <<< "$menu_options"
+    # readarray -t options <<< "$menu_options"
 
     echo
     log INFO "Menu ${BOLD}$menu_name${RESET}"
@@ -28,40 +28,52 @@ function prompt() {
         for argument in "${argument_array[@]}"; do
             local hasOptions=$(echo "$argument" | jq 'has("options")')
             if [[ $hasOptions == "true" ]]; then
-                echo "dropdown"
+                prompt_user_choice
             fi
 
             local hasPrompt=$(echo "$argument" | jq 'has("prompt")')
             if [[ $hasPrompt == "true" ]]; then
-                local prompt_label=$(echo $argument | jq -r '.prompt')
-                local prompt_format=$(echo $argument | jq -r '.format')
-
-                prompt_user "$module_name" "$prompt_label" "$prompt_format" "${argument_result_array[@]}"
+                prompt_user_question
             fi            
         done
     fi    
 }
 
-function prompt_user() {
-    local module_name=$1
-    local prompt="$2"
-    local prompt_format="$3"
-    shift 3 # Shift the first three arguments (module_name and prompt and prompt format) out of the way
-    local command_arguments=("$@") # Store the remaining arguments as an array
+function prompt_user_choice() {
+    local prompt_label=$(echo $argument | jq -r '.options')
+    local prompt_options=$(echo $argument | jq -r '.parameters[].options[] | .name')
+    readarray -t prompt_options_array <<< "$prompt_options"
+
+    PS3="$prompt_label: "
+    select prompt_option in "${prompt_options_array[@]}"; do
+        if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
+
+            local selected_prompt_option=$(echo $argument | jq -r --arg selected "$prompt_option" '.parameters[].options[] | select (.name == $selected) | .value')
+            argument_result_array+=($selected_prompt_option)
+            break
+        else
+            log ERROR "Invalid choice!"
+        fi
+    done
+}
+
+function prompt_user_question() {
+    local prompt_label=$(echo $argument | jq -r '.prompt')
+    local prompt_format=$(echo $argument | jq -r '.format')
     
     if [[ $prompt_format == "yn" ]]; then
-        prompt="${prompt} [y/N]"
+        prompt_label="${prompt_label} [y/N]"
     fi
     
-    if [[ $prompt =~ \$\{command:([^}]*)\} ]]; then
+    if [[ $prompt_label =~ \$\{command:([^}]*)\} ]]; then
         local command="${BASH_REMATCH[1]}"
 
-        run_command "$module_name" "$command" "${command_arguments[@]}"
+        run_command "$module_name" "$command" "${argument_result_array[@]}"
     fi
 
     # Prompt user for input until an integer is provided
     while true; do
-        read -r -p "$prompt: " response
+        read -r -p "$prompt_label: " response
 
         case $prompt_format in
             "number")
@@ -77,7 +89,7 @@ function prompt_user() {
                     argument_result_array+=($response)
                     break
                 else
-                    log ERROR "Invalid input. Please enter either y for yes or n for No."
+                    log ERROR "Invalid input. Please enter either y for yes or n for no."
                 fi                
                 ;;
             "string")

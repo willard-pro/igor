@@ -5,12 +5,9 @@ function run_command() {
 	shift 2 # Shift the first two arguments (module_name and command) out of the way
     local arguments=("$@") # Store the remaining arguments as an array
 
-echo $module_name
-echo $command
-
 	# Use printf to properly escape the arguments for use in the command string
     local escaped_arguments
     printf -v escaped_arguments "%q " "${arguments[@]}"
 
-	echo env -i /bin/bash -c "source core/colors.sh && source core/log.sh && ./modules/$module_name/$command.sh $escaped_arguments"
+	echo env -i /bin/bash -c "source core/colors.sh && source core/log.sh && /bin/bash ./modules/$module_name/$command.sh $escaped_arguments"
 }

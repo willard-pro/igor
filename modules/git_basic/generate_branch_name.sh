@@ -1,4 +1,13 @@
 
+# Check if all three arguments are provided
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 <branch_type> <ticket_number> <ticket_name>"
+    exit 1
+fi
+
+generate_branch_name $1 $2 $3
+
+
 function generate_branch_name() {
 	local branch_type = $1
 	local ticket_number=$2
