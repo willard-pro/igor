@@ -5,16 +5,16 @@ log() {
     
     case $level in
         "ERROR")
-            echo -e "${RED}[ERROR] $message${RESET}"
+            echo -e "${RED}[ERROR]${RESET} $message"
             ;;
         "WARN")
-            echo -e "${YELLOW}[WARN] $message${RESET}"
+            echo -e "${YELLOW}[WARN]${RESET} $message"
             ;;
         "INFO")
-            echo -e "${GREEN}[INFO] $message${RESET}"
+            echo -e "${GREEN}[INFO]${RESET} $message"
             ;;
         "DEBUG")
-            echo -e "${BLUE}[DEBUG] $message${RESET}"
+            echo -e "${BLUE}[DEBUG]${RESET} $message"
             ;;
         *)
             echo "Unknown log level: $level"
