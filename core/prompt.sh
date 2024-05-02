@@ -66,15 +66,12 @@ function prompt_user_choice() {
 function prompt_user_question() {
     local prompt_label=$(echo $argument | jq -r '.prompt')
     local prompt_format=$(echo $argument | jq -r '.format')
-    
-    if [[ $prompt_format == "yn" ]]; then
-        prompt_label="${prompt_label} [y/N]"
-    fi
-    
+        
     if [[ $prompt_label =~ \$\{command:([^}]*)\} ]]; then
         local command="${BASH_REMATCH[1]}"
 
         run_command "$module_name" "$command" "${argument_result_array[@]}"
+        prompt_label="${prompt_label/\$\{command:$command\}/$command_result}"        
     fi
 
     case $prompt_format in

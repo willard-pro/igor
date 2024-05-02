@@ -56,6 +56,10 @@
         {
           "prompt": "Enter Ticket Name",
           "format": "string"
+        },
+        {
+          "prompt": "Do you wish to continue and create branch '${command:generate_branch_name}'",
+          "format": "yn"
         }
       ]
     }

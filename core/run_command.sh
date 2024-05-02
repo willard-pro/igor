@@ -1,4 +1,6 @@
 
+command_result=""
+
 function run_command() {
 	local module_name=$1
 	local command=$2
@@ -16,7 +18,21 @@ function run_command() {
 	arguments="${arguments% }"
 
     log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET}"
+
+    # local command_tmp=$(mktemp)
+    local command_tmp="command.tmp"
+    local command_bash="./modules/$module_name/$command.sh"
+
+    cp "$config_dir/command_template.sh" "$command_tmp"
     
-	env -i /bin/bash -c "export debug=$debug && ./modules/$module_name/$command.sh $arguments"
-	# source core/colors.sh && source core/log.sh &&
+
+	sed -i "s/\$command/$command/g" $command_tmp
+	sed -i "s/\$module/$module_name/g" $command_tmp
+	sed -i "s/\$arguments/$arguments/g" $command_tmp
+	
+	env -i /bin/bash -c "export debug=$debug && export file_store=$file_store && /bin/bash $command_tmp $arguments"
+
+	store_peek
+
+	command_result="$store_value"
 }

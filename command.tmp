@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source core/log.sh
+source core/store.sh
+source core/colors.sh
+
+source modules/git_basic/create_branch.sh
+
+create_branch "feature" "123" "21ddg dg sg sssdf ghh" "y"
+
+store_push "create_branch=$create_branch_result"

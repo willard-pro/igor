@@ -23,3 +23,10 @@ log() {
             ;;
     esac
 }
+
+print_array() {
+    # $1 is the array passed to the function
+    for item in "${@}"; do
+        echo "$item"
+    done
+}

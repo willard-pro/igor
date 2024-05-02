@@ -1,8 +1,13 @@
 #!/bin/bash
 
+debug=0
+
 core_dir="core"
 config_dir="config"
 modules_dir="modules"
+
+# file_store=$(mktemp)
+file_store="store.txt"
 
 # Check if the directory exists
 if [ ! -d "$core_dir" ]; then
