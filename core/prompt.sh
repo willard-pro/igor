@@ -1,4 +1,6 @@
 
+prompt_result=""
+
 function prompt() {
     local module_name=$1
     local menu_name=$2
@@ -8,7 +10,7 @@ function prompt() {
     local module_config="$modules_dir/$module_name/config.json"
 
     local arguments=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .arguments' < $module_config)
-    # readarray -t options <<< "$menu_options"
+    local command=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .command' < $module_config)
 
     echo
     log INFO "Menu ${BOLD}$menu_name${RESET}"
@@ -29,13 +31,17 @@ function prompt() {
             local hasOptions=$(echo "$argument" | jq 'has("options")')
             if [[ $hasOptions == "true" ]]; then
                 prompt_user_choice
+                argument_result_array+=($prompt_result)
             fi
 
             local hasPrompt=$(echo "$argument" | jq 'has("prompt")')
             if [[ $hasPrompt == "true" ]]; then
                 prompt_user_question
+                argument_result_array+=($prompt_result)
             fi            
         done
+
+        run_command "$module_name" "$command" "${argument_result_array[@]}"
     fi    
 }
 
@@ -49,7 +55,7 @@ function prompt_user_choice() {
         if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
 
             local selected_prompt_option=$(echo $argument | jq -r --arg selected "$prompt_option" '.parameters[].options[] | select (.name == $selected) | .value')
-            argument_result_array+=($selected_prompt_option)
+            prompt_result=$selected_prompt_option
             break
         else
             log ERROR "Invalid choice!"
@@ -71,36 +77,71 @@ function prompt_user_question() {
         run_command "$module_name" "$command" "${argument_result_array[@]}"
     fi
 
-    # Prompt user for input until an integer is provided
+    case $prompt_format in
+        "number")
+            prompt_user_number "$prompt_label"
+            ;;
+        "yn")
+            prompt_user_yn "$prompt_label"
+            ;;
+        "string")
+            prompt_user_text "$prompt_label"
+            ;;
+        *)
+            log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
+            exit 1 
+            ;;
+    esac
+}
+
+# ####
+# Function will place selected response in variable prompt_result  
+# ####
+function prompt_user_yn() {
+    local prompt_label=$1
+
+    prompt_label="${prompt_label} [y/N]"
+
     while true; do
         read -r -p "$prompt_label: " response
 
-        case $prompt_format in
-            "number")
-                if is_number "$response"; then
-                    argument_result_array+=($response)
-                    break
-                else
-                    log ERROR "Invalid input. Please enter a number."
-                fi
-                ;;
-            "yn")
-                if is_yn "$response"; then
-                    argument_result_array+=($response)
-                    break
-                else
-                    log ERROR "Invalid input. Please enter either y for yes or n for no."
-                fi                
-                ;;
-            "string")
-                argument_result_array+=($response)
-                break
-                ;;
-            *)
-                log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
-                exit 1 
-                ;;
-        esac
+        if is_yn "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter either y for yes or n for no."
+        fi                
+    done
+}
+
+# ####
+# Function will place selected response in variable prompt_result  
+# ####
+function prompt_user_text() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+        prompt_result=$response
+        break
+    done
+}
+
+# ####
+# Function will place selected response in variable prompt_result  
+# ####
+function prompt_user_number() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if is_number "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter a number."
+        fi                
     done
 }
 

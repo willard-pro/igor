@@ -5,6 +5,12 @@
       "gh",
       "git",
       "sed"
+    ],
+    "checks": [
+      {
+    	 "command": "is_git_dir",
+       "message": "This is not a valid git workspace"
+     }
     ]
   },
   "menus": [
@@ -32,7 +38,8 @@
               "options": [
                 {
                   "name": "Feature",
-                  "value": "feature"
+                  "value": "feature",
+                  "condition": "is_develop_branch"
                 },
                 {
                   "name": "BugFix",
@@ -49,10 +56,6 @@
         {
           "prompt": "Enter Ticket Name",
           "format": "string"
-        },
-        {
-          "prompt": "Do you wish to continue and create branch ${command:generate_branch_name}",
-          "format": "yn"
         }
       ]
     }

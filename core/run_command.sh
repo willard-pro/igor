@@ -9,5 +9,8 @@ function run_command() {
     local escaped_arguments
     printf -v escaped_arguments "%q " "${arguments[@]}"
 
-	echo env -i /bin/bash -c "source core/colors.sh && source core/log.sh && /bin/bash ./modules/$module_name/$command.sh $escaped_arguments"
+    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh${RESET}"
+    
+	env -i /bin/bash -c "./modules/$module_name/$command.sh $escaped_arguments"
+	# source core/colors.sh && source core/log.sh &&
 }

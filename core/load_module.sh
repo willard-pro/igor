@@ -4,6 +4,6 @@ load_module() {
 	
 	log INFO "Loading module ${BOLD}$module_name...${RESET}"
 
-	check_prerequisists $module_name $module_config
+	check_prerequisists
 	menu $module_name main
 }

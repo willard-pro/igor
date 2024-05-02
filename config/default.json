@@ -1,0 +1,22 @@
+{
+	"required": {
+		"commands": [
+			{
+				"command": "awk",
+				"message": "${YELLOW} ${BOLD}awk${RESET} command not found. Please install awk and try again${RESET}."
+			},
+			{
+				"command": "gh",
+				"message": "${YELLOW} ${BOLD}gh${RESET} command not found. Please install GitHub CLI (https://docs.github.com/en/github-cli/github-cli/quickstart) and try again${RESET}."
+			},
+			{
+				"command": "git",
+				"message": "${YELLOW} ${BOLD}git${RESET} command not found. Please install git and try again${RESET}."
+			},
+			{
+				"command": "sed",
+				"message": "${YELLOW} ${BOLD}sed${RESET} command not found. Please install sed and try again${RESET}."
+			}
+		]
+	}
+}
