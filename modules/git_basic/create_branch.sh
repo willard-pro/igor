@@ -35,7 +35,7 @@ function create_branch() {
     fi
 
     echo
-    prompt_user_yn "Do you wish to continue and create branch $branch_name"
+    prompt_user_yn "Do you wish to continue and create branch '$branch_name'"
 
     if [[ $prompt_response == "y" ]]; then 
         # git branch $new_branch_name
@@ -57,7 +57,7 @@ if [ "$#" -ne 3 ]; then
     exit 1
 fi
 
-create_branch $1 $2 $3
+create_branch "$1" "$2" "$3"
 
         # {
         #   "prompt": "Do you wish to continue and create branch ${command:generate_branch_name}",

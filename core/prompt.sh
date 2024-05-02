@@ -31,13 +31,13 @@ function prompt() {
             local hasOptions=$(echo "$argument" | jq 'has("options")')
             if [[ $hasOptions == "true" ]]; then
                 prompt_user_choice
-                argument_result_array+=($prompt_result)
+                argument_result_array+=("$prompt_result")
             fi
 
             local hasPrompt=$(echo "$argument" | jq 'has("prompt")')
             if [[ $hasPrompt == "true" ]]; then
                 prompt_user_question
-                argument_result_array+=($prompt_result)
+                argument_result_array+=("$prompt_result")
             fi            
         done
 

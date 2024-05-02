@@ -15,7 +15,7 @@ for core_file in "$core_dir"/*.sh; do
     # Check if the file is readable and executable
     # && [ -x "$core_file" ]
     if [ -r "$core_file" ]; then
-        echo "Importing script: $core_file"
+       	# echo "Importing script: $core_file"
         source "$core_file"
     else
         echo "Warning: Skipping non-readable or non-executable file: $core_file"
@@ -24,7 +24,7 @@ done
 
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
-log INFO "Core loaded..."
+log DEBUG "Core loaded..."
 banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "

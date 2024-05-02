@@ -14,7 +14,9 @@ log() {
             echo -e "${GREEN}[INFO]${RESET} $message"
             ;;
         "DEBUG")
-            echo -e "${BLUE}[DEBUG]${RESET} $message"
+            if [ "$debug" -eq 1 ]; then
+                echo -e "${BLUE}[DEBUG]${RESET} $message"
+            fi
             ;;
         *)
             echo "Unknown log level: $level"
