@@ -16,6 +16,7 @@
   "menus": [
     {
       "menu": "main",
+      "label": "These are the options available for branch ${BOLD}${command:current_branch}${RESET}",
       "options": [
         {
           "name": "Create Branch",

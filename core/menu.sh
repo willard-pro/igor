@@ -22,6 +22,19 @@ function menu() {
 
     local module_config="$modules_dir/$module_name/config.json"
 
+    local menu_label=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .label' < $module_config)
+    if [[ -v menu_label ]]; then
+        if [[ $menu_label =~ \$\{command:([^}]*)\} ]]; then
+            local command="${BASH_REMATCH[1]}"
+
+            run_command "$module_name" "$command" "${argument_result_array[@]}"
+            menu_label="${menu_label/\$\{command:$command\}/$command_result}"
+        fi
+    else
+        menu_label="Menu ${BOLD}$menu_name${RESET}"
+    fi
+
+    echo -e "$menu_label"
 
     local menu_options=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .options[].name' < $module_config)
     readarray -t options_all <<< "$menu_options"
@@ -38,7 +51,7 @@ function menu() {
             arguments_array=($arguments)
 
             run_command_condition $command "${arguments_array[@]}"
-            
+
             if [ $? -eq 0 ]; then
                 options+=("$option")
             else
@@ -48,9 +61,6 @@ function menu() {
             options+=("$option")
         fi
     done
-
-    echo
-    log INFO "Menu ${BOLD}$menu_name${RESET}"
 
     PS3="Select action to take: "
     select option in "${options[@]}"; do
