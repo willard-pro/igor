@@ -1,5 +1,3 @@
-#!/bin/bash
-
 source ./modules/git_basic/generate_branch_name.sh
 
 function create_branch() {

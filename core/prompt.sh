@@ -12,8 +12,7 @@ function prompt() {
     local arguments=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .arguments' < $module_config)
     local command=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .command' < $module_config)
 
-    echo
-    log INFO "Menu ${BOLD}$menu_name${RESET}"
+    log DEBUG "Menu ${BOLD}$menu_name${RESET}"
 
     # Check if arguments is not empty
     if [ -n "$arguments" ]; then
@@ -80,6 +79,14 @@ function prompt_user_question() {
             ;;
         "yn")
             prompt_user_yn "$prompt_label"
+            ;;
+        "continue")
+            prompt_user_yn "$prompt_label"
+
+            if [[ "$prompt_result" =~ ^[nN]$ ]]; then
+                log_phrase
+                exit 0
+            fi
             ;;
         "string")
             prompt_user_text "$prompt_label"

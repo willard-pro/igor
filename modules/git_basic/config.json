@@ -16,12 +16,12 @@
   "menus": [
     {
       "menu": "main",
-      "label": "These are the options available for branch ${BOLD}${command:current_branch}${RESET}",
+      "label": "These are the options available for branch '${command:current_branch}'",
       "options": [
         {
           "name": "Create Branch",
           "command": "menu:create_branch",
-          "condition":"is_branch develop"
+          "condition":"is_branch main"
         },
         {
           "name": "Create Pull Request",
@@ -66,7 +66,7 @@
         },
         {
           "prompt": "Do you wish to continue and create branch '${command:generate_branch_name}'",
-          "format": "yn"
+          "format": "continue"
         }
       ]
     },
@@ -76,7 +76,7 @@
       "arguments": [
         {
           "prompt": "Do you wish to delete all local branches which do not exist on remote",
-          "format": "yn"
+          "format": "continue"
         }
       ]
     }
