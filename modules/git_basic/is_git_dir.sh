@@ -10,6 +10,3 @@ function is_git_dir() {
         return 1
     fi
 }
-
-# Call the function and return its result
-is_git_dir

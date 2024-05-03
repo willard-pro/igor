@@ -30,8 +30,8 @@
         },
         {
           "name": "Prune Local Branches",
-          "command": "clean_branches",
-          "condition":"is_branch develop"
+          "command": "menu:prune_branches",
+          "condition":"is_branch main"
         }
       ]
     },
@@ -66,6 +66,16 @@
         },
         {
           "prompt": "Do you wish to continue and create branch '${command:generate_branch_name}'",
+          "format": "yn"
+        }
+      ]
+    },
+    {
+      "menu": "prune_branches",
+      "command": "clean_branches",
+      "arguments": [
+        {
+          "prompt": "Do you wish to delete all local branches which do not exist on remote",
           "format": "yn"
         }
       ]

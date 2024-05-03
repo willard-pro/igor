@@ -7,7 +7,22 @@ config_dir="config"
 modules_dir="modules"
 
 # file_store=$(mktemp)
-file_store="store.txt"
+tmp_dir="tmp"
+file_store=$(mktemp -p "$tmp_dir" "store_XXXX")
+command_dir="$tmp_dir/commands"
+
+if [ ! -d "$tmp_dir" ]; then
+	mkdir -p $tmp_dir
+fi
+
+if [ ! -d "$command_dir" ]; then
+	mkdir -p $command_dir
+fi
+
+if [ ! -f "$file_store" ]; then
+	touch $file_store
+fi
+
 
 # Check if the directory exists
 if [ ! -d "$core_dir" ]; then
@@ -57,6 +72,11 @@ fi
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
 log DEBUG "Core loaded..."
+
+
+log INFO "Script values are stored during execution is available at ${BOLD}$file_store${RESET}"
+log INFO "Comands executed can be found in ${BOLD}$command_dir${RESET}"
+
 banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "

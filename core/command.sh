@@ -19,8 +19,11 @@ function run_command() {
 
     log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET}"
 
-    # local command_tmp=$(mktemp)
-    local command_tmp="command.tmp"
+    if [ ! -d "$command_dir/$module_name"  ]; then
+        mkdir -p "$command_dir/$module_name" 
+    fi
+
+    local command_tmp=$(mktemp -p "$command_dir/$module_name" "${command_name}_XXXX")
     local command_bash="./modules/$module_name/$command.sh"
 
     cp "$config_dir/command_template.sh" "$command_tmp"
@@ -47,8 +50,7 @@ function run_command_exists() {
     local command_name=$1
     local error_message=$2
     
-    if command -v "$command_name" &> /dev/null
-    then
+    if command -v "$command_name" &> /dev/null; then
         log INFO "${GREEN}OK: ${BOLD}$command_name${RESET}"
         return 1
     else

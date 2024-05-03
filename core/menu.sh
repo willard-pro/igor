@@ -30,11 +30,13 @@ function menu() {
             run_command "$module_name" "$command" "${argument_result_array[@]}"
             menu_label="${menu_label/\$\{command:$command\}/$command_result}"
         fi
+        
+        echo -e "$menu_label"
     else
-        menu_label="Menu ${BOLD}$menu_name${RESET}"
+        log DEBUG "Menu ${BOLD}$menu_name${RESET}"
     fi
 
-    echo -e "$menu_label"
+    
 
     local menu_options=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .options[].name' < $module_config)
     readarray -t options_all <<< "$menu_options"
