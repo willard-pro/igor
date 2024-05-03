@@ -81,12 +81,7 @@ function prompt_user_question() {
             prompt_user_yn "$prompt_label"
             ;;
         "continue")
-            prompt_user_yn "$prompt_label"
-
-            if [[ "$prompt_result" =~ ^[nN]$ ]]; then
-                log_phrase
-                exit 0
-            fi
+            prompt_user_continue "$prompt_label"
             ;;
         "string")
             prompt_user_text "$prompt_label"
@@ -116,6 +111,20 @@ function prompt_user_yn() {
             log ERROR "Invalid input. Please enter either y for yes or n for no."
         fi                
     done
+}
+
+# ####
+# Function will place selected response in variable prompt_result  
+# ####
+function prompt_user_continue() {
+    local prompt_label=$1
+    
+    prompt_user_yn "$prompt_label"
+
+    if [[ "$prompt_result" =~ ^[nN]$ ]]; then
+        log_phrase
+        exit 0
+    fi    
 }
 
 # ####

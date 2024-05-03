@@ -1,6 +1,7 @@
 #!/bin/bash
 
 debug=0
+development=0
 
 core_dir="core"
 config_dir="config"
@@ -22,7 +23,6 @@ fi
 if [ ! -f "$file_store" ]; then
 	touch $file_store
 fi
-
 
 # Check if the directory exists
 if [ ! -d "$core_dir" ]; then
@@ -48,6 +48,8 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --debug) debug=1
 			;;
+        --develop) development=1
+			;;
         # --load-module)
         #     if [[ -n "$2" && ${2:0:1} != "-" ]]; then
         #         module="$2"
@@ -61,7 +63,8 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-
+log DEBUG "Core loaded..."
+	
 log DEBUG "Check if all required commands are available..."
 run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."
 if [ $? -eq 0 ]; then
@@ -69,9 +72,43 @@ if [ $? -eq 0 ]; then
 fi
 # add shuf as required command
 
+if [ -v HOME ]; then
+	if [[ ! -d "$HOME/.igor" && $development -eq 0 ]]; then
+		log IGOR "I sense that this is the first time you are making use of my services"
+		prompt_user_continue "May I continue and install my workbench"
+		
+		log IGOR "Creating ${BOLD}~/.igor${RESET} directory which will contain configuration and Igor's projects"
+		mkdir -p "$HOME/.igor"
+		mkdir -p "$HOME/.igor/core"
+		mkdir -p "$HOME/.igor/config"
+		mkdir -p "$HOME/.igor/modules"
+
+		log IGOR "Copying configuration for my workbench"
+		cp -R "./$config_dir" "$HOME/.igor"
+		log IGOR "Copying core tools for my workbench"
+		cp -R "./$core_dir" "$HOME/.igor"
+		log IGOR "Copy over module(s) ${BOLD}module_admin${RESET} to my workbench"
+		cp -R "./$module_dir/modules/module_admin" "$HOME/.igor/modules"
+
+		echo ln -s "$HOME/.igor/igor" /usr/local/bin/igor.sh
+
+		log IGOR "I have completed installing and configuring my workbench"
+		log IGOR "Please delete this directory as it is no longer required"
+		log IGOR "Shoud you need me again, just call on my name ${BOLD}/usr/local/bin/igor${RESET}"
+
+		log_phrase
+		exit 0
+	else
+		if [[ "${BASH_SOURCE[0]}" != "usr/local/bin/igor" && development -eq 0 ]]; then
+			log IGOR "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
+			exit 1
+		fi
+	fi
+fi
+
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
-log DEBUG "Core loaded..."
+
 
 
 log INFO "Script values are stored during execution is available at ${BOLD}$file_store${RESET}"
@@ -80,7 +117,7 @@ log INFO "Comands executed can be found in ${BOLD}$command_dir${RESET}"
 banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "
-options=("${modules[@]}")  # Using modules as options
+readarray -t options <<< "$modules"
 options+=("Exit")
 
 select option in "${options[@]}"; do

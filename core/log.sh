@@ -4,6 +4,9 @@ function log() {
     local message=$2
     
     case $level in
+        "IGOR")
+            echo -e "${BG_WHITE}${BLACK}[IGOR]${RESET} $message"
+            ;;
         "ERROR")
             echo -e "${RED}[ERROR]${RESET} $message"
             ;;
@@ -27,7 +30,7 @@ function log() {
 function log_phrase() {
     # Get a random line from the file
     local random_phrase=$(shuf -n 1 "$config_dir/phrases.txt")
-    log INFO "$random_phrase"
+    log IGOR "$random_phrase"
 }
 
 print_array() {

@@ -23,7 +23,7 @@ function menu() {
     local module_config="$modules_dir/$module_name/config.json"
 
     local menu_label=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .label' < $module_config)
-    if [[ -v menu_label ]]; then
+    if [[ $menu_label != "null" ]]; then
         if [[ $menu_label =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
 
@@ -46,7 +46,7 @@ function menu() {
     for option in "${options_all[@]}"; do
         local menu_condition=$(jq -r --arg menu_name "$menu_name" --arg option "$option" '.menus[] | select(.menu == $menu_name) | .options[] | select(.name == $option) | .condition' < $module_config)
 
-        if [[ -v menu_condition ]]; then
+        if [[ $menu_condition != "null" ]]; then
             local command="${menu_condition%% *}"
             local arguments="${menu_condition#* }"
             # Converting the rest into an array

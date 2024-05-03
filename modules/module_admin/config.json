@@ -1,0 +1,72 @@
+{
+  "required": {
+    "commands": [
+      "zip"
+    ]
+  },
+  "menus": [
+    {
+      "menu": "main",
+      "label": "Module Aministration",
+      "options": [
+        {
+          "name": "Install Module",
+          "command": "menu:install_module"
+        },
+        {
+          "name": "Remove Module",
+          "command": "menu:remove_module"
+        }
+      ]
+    },
+    {
+      "menu": "install_module",
+      "command": "install_module",
+      "arguments": [
+        {
+          "options": "Select module source",
+          "parameters": [
+            {
+              "options": [
+                {
+                  "name": "Directory",
+                  "value": "dir"
+                },
+                {
+                  "name": "Zip file",
+                  "value": "zip"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "prompt": "Enter path to module directory",
+          "format": "string"
+        },
+        {
+          "prompt": "Enter path to zip file",
+          "format": "string"
+        },
+        {
+          "prompt": "Do you wish to continue and install '${command:get_module_name}'",
+          "format": "continue"
+        }
+      ]
+    },
+    {
+      "menu": "remove_module",
+      "command": "remove_module",
+      "arguments": [
+        {
+          "options": "Select module to remove",
+          "parameters": "${command:get_installed_modules}"
+        },
+        {
+          "prompt": "Do you wish to module xyz",
+          "format": "continue"
+        }
+      ]
+    }
+  ]
+}

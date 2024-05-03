@@ -55,7 +55,7 @@ function check_checks() {
     local mandatory_failed=0
 
 
-    local checks=$(jq -r '.required.checks[] | .command' < $module_config | tr -d "'")
+    local checks=$(jq -r '.required.checks[] | .command // empty' < $module_config | tr -d "'")
 
     # Loop over the extracted checks
     for check in $checks; do

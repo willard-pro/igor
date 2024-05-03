@@ -1,35 +1,23 @@
-# #############################################################################
-# Creates a pull request using GitHub CLI.  If the branch to PR is a release
-# or hotfix branch then it creates a copy of that branch and prefixes it with
-# auto and creates a PR to develop from the auto branch.
-# #############################################################################
+source ./modules/git_basic/current_branch.sh
 
 function create_pr() {
+    local remote_url=$(git config --get remote.origin.url)
+    local repo_owner=$(echo "$remote_url" | sed -n 's/.*github.*.com[:/]\(.*\)\/.*/\1/p')
+    local repo_name=$(echo "$remote_url" | sed -n 's/.*github.*.com.*\/\(.*\)\.git$/\1/p')
+
+    current_branch
+
+    case "$current_branch_result" in
+        feature/*)
+            parent_branch="develop"
+            ;;
+    esac        
+
     # Remove the word before '/'
-    title="${current_branch#*/}"
+    title="${current_branch_result#*/}"
     # Replace '-' with ' '
     title="${title//-/ }"
 
     gh pr create --base $parent_branch --head $current_branch --repo $repo_owner/$repo_name --title "$title" --body-file .github/pull_request_template.md
-    
-    while true; do
-        read -p "Do you wish to delete $current_branch? [y/N]" response
-        case $response in
-            [yY])
-                git checkout develop
-                git branch -d $current_branch 
-                log INFO "Created PR, switched back to develop branch and deleted local branch ${BOLD}$current_branch${RESET}"
-                break
-                ;;
-            [nN]|"")
-                log INFO "Created PR, from local branch ${BOLD}$current_branch${RESET}"
-                exit 1
-                ;;
-            *)
-                log ERROR "Invalid input!"
-                ;;
-        esac
-    done
-
-    echo -e "${YELLOW}PR has been created please update details${RESET}!"
+    log INFO "Created ${BOLD}PR${RESET}, from local branch ${BOLD}$current_branch${RESET}"
 }

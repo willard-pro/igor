@@ -80,11 +80,19 @@ function run_command_condition() {
     shift 1 # Shift the first arguments (command_name and command) out of the way
     local command_arguments=("$@") # Store the remaining arguments as an array
 
+    local command_not=1;
+
+    if [[ $command_name == !* ]]; then
+        # Remove "!" from the beginning of the string
+        command_name="${command_name:1}"
+        command_not=0
+    fi
+
     run_command $module_name $command_name "${command_arguments[@]}"
 
     if [ $? -eq 0 ]; then
-        return 0
+        return $((1 ^ $command_not))
     else
-        return 1
+        return $((0 ^ $command_not))
     fi
 }
