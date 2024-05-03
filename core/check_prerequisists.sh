@@ -25,9 +25,8 @@ function check_commands() {
         # Extract the message for the specified command
         local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json)
 
-
         # Call the function
-        check_command $command "$message"
+        run_command_exists $command "$message"
 
         # Check the exit status of the function
         if [ $? -eq 0 ]; then
@@ -66,7 +65,7 @@ function check_checks() {
         local message=$(jq -r --arg check "$check" '.required.checks[] | select(.command == $check) | .message' < $module_config)
 
         # Call the function
-        check_check $check "$message"
+        run_command_check $check "$message"
 
         # Check the exit status of the function
         if [ $? -eq 1 ]; then
@@ -83,35 +82,4 @@ function check_checks() {
     #     echo -e "${YELLOW}Failed ${RESET}$optional_failed${YELLOW} of the optional ${RESET}$optional${YELLOW} checks, please keep in mind some functionality will not be supported${RESET}."
     #     echo
     # fi      
-}
-
- # Function to check command existence and display error message if not found
-function check_command() {
-    local command_name=$1
-    local error_message=$2
-    
-    if command -v "$command_name" &> /dev/null
-    then
-        log INFO "${GREEN}OK: ${BOLD}$command_name${RESET}"
-        return 1
-    else
-        log ERROR "${YELLOW}$error_message${RESET}."
-        return 0
-    fi
-}
-
-function check_check() {
-    local command_name=$1
-    local ok_message=$2
-    local nok_message=$3
-    
-    run_command $module_name $command_name
-
-    if [ $? -eq 0 ]; then
-        log INFO "${GREEN}OK: ${BOLD}$command_name${RESET}"
-        return 0
-    else
-        log ERROR "${YELLOW}$nok_message${RESET}."
-        return 1
-    fi
 }

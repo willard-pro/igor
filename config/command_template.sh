@@ -8,4 +8,8 @@ source modules/$module/$command.sh
 
 $command $arguments
 
+if [[ ! -v $command_result ]]; then
+	$command_result=$?
+fi
+
 store_push "$command=$$command_result"

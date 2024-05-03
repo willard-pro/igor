@@ -4,8 +4,12 @@ source core/log.sh
 source core/store.sh
 source core/colors.sh
 
-source modules/git_basic/is_git_dir.sh
+source modules/git_basic/is_branch.sh
 
-is_git_dir 
+is_branch "'develop'"
 
-store_push "is_git_dir=$is_git_dir_result"
+if [[ ! -v is_branch_result ]]; then
+	is_branch_result=$?
+fi
+
+store_push "is_branch=$is_branch_result"

@@ -24,7 +24,28 @@ function menu() {
 
 
     local menu_options=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .options[].name' < $module_config)
-    readarray -t options <<< "$menu_options"
+    readarray -t options_all <<< "$menu_options"
+
+    # Remove elements from the array if the condition is met
+    options=()
+    for option in "${options_all[@]}"; do
+        local menu_condition=$(jq -r --arg menu_name "$menu_name" --arg option "$option" '.menus[] | select(.menu == $menu_name) | .options[] | select(.name == $option) | .condition' < $module_config)
+
+        if [[ -v menu_condition ]]; then
+            local command="${menu_condition%% *}"
+            local arguments="${menu_condition#* }"
+            # Converting the rest into an array
+            arguments_array=($arguments)
+
+            run_command_condition $command "${arguments_array[@]}"
+
+            if [ $? -eq 0 ]; then
+                options+=("$option")
+            fi             
+        else
+            options+=("$option")
+        fi
+    done
 
     echo
     log INFO "Menu ${BOLD}$menu_name${RESET}"

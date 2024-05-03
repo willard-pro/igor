@@ -48,7 +48,7 @@ done
 
 
 log DEBUG "Check if all required commands are available..."
-check_command "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."
+run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."
 if [ $? -eq 0 ]; then
 	exit 1
 fi
