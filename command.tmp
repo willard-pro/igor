@@ -4,8 +4,8 @@ source core/log.sh
 source core/store.sh
 source core/colors.sh
 
-source modules/git_basic/create_branch.sh
+source modules/git_basic/is_git_dir.sh
 
-create_branch "feature" "123" "dfs sssf gsfgs" "y"
+is_git_dir 
 
-store_push "create_branch=$create_branch_result"
+store_push "is_git_dir=$is_git_dir_result"

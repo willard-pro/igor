@@ -27,6 +27,32 @@ for core_file in "$core_dir"/*.sh; do
     fi
 done
 
+
+# Parse command line options
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --debug) debug=1
+			;;
+        # --load-module)
+        #     if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+        #         module="$2"
+        #         shift
+        #     else
+        #         log ERROR "Missing module name after --load-module option"
+        #         usage
+        #     fi
+        #     ;;
+    esac
+    shift
+done
+
+
+log DEBUG "Check if all required commands are available..."
+check_command "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."
+if [ $? -eq 0 ]; then
+	exit 1
+fi
+
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
 log DEBUG "Core loaded..."

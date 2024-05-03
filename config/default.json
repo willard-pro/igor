@@ -14,6 +14,10 @@
 				"message": "${YELLOW} ${BOLD}git${RESET} command not found. Please install git and try again${RESET}."
 			},
 			{
+				"command": "jq",
+				"message": "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."				
+			}
+			{
 				"command": "sed",
 				"message": "${YELLOW} ${BOLD}sed${RESET} command not found. Please install sed and try again${RESET}."
 			}

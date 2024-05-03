@@ -7,7 +7,7 @@ function check_prerequisists() {
 }
 
 function check_commands() {
-    log DEBUG "Check if all required commands are available..."
+    log DEBUG "Check if module ${BOLD}$module_name${RESET} required commands are available..."
 
     # local optional=0
     # local optional_failed=0

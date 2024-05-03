@@ -38,3 +38,4 @@ create_branch=
 is_git_dir=
 generate_branch_name=feature/123-dfs-sssf-gsfgs
 create_branch=
+is_git_dir=
