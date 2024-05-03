@@ -19,11 +19,18 @@
       "options": [
         {
           "name": "Create Branch",
-          "command": "menu:create_branch"
+          "command": "menu:create_branch",
+          "condition":"is_branch 'develop'"
+        },
+        {
+          "name": "Create Pull Request",
+          "command": "create_pr",
+          "condition":"!is_branch 'main' 'develop'"
         },
         {
           "name": "Prune Local Branches",
-          "command": "clean_branches"
+          "command": "clean_branches",
+          "condition":"is_branch 'develop'"
         }
       ]
     },
@@ -38,8 +45,7 @@
               "options": [
                 {
                   "name": "Feature",
-                  "value": "feature",
-                  "condition": "is_develop_branch"
+                  "value": "feature"
                 },
                 {
                   "name": "BugFix",

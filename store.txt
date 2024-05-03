@@ -35,3 +35,6 @@ create_branch=
 is_git_dir=
 generate_branch_name=feature/123-21ddg-dg-sg-sssdf-ghh
 create_branch=
+is_git_dir=
+generate_branch_name=feature/123-dfs-sssf-gsfgs
+create_branch=

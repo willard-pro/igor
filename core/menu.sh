@@ -22,6 +22,7 @@ function menu() {
 
     local module_config="$modules_dir/$module_name/config.json"
 
+
     local menu_options=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .options[].name' < $module_config)
     readarray -t options <<< "$menu_options"
 

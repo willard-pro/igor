@@ -6,6 +6,6 @@ source core/colors.sh
 
 source modules/git_basic/create_branch.sh
 
-create_branch "feature" "123" "21ddg dg sg sssdf ghh" "y"
+create_branch "feature" "123" "dfs sssf gsfgs" "y"
 
 store_push "create_branch=$create_branch_result"
