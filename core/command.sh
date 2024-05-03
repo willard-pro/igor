@@ -31,10 +31,15 @@ function run_command() {
 	sed -i "s/\$arguments/$arguments/g" $command_tmp
 	
 	env -i /bin/bash -c "export debug=$debug && export file_store=$file_store && /bin/bash $command_tmp $arguments"
+	local command_exit_value=$?
 
 	store_peek
 
 	command_result="$store_value"
+
+	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$store_value${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
+
+	return $command_exit_value
 }
 
  # Function to check command existence and display error message if not found

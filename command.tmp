@@ -6,10 +6,13 @@ source core/colors.sh
 
 source modules/git_basic/is_branch.sh
 
-is_branch "'develop'"
+is_branch "develop"
+exit_code=$?
 
 if [[ ! -v is_branch_result ]]; then
-	is_branch_result=$?
+	is_branch_result=$exit_code
 fi
 
 store_push "is_branch=$is_branch_result"
+
+exit $exit_code

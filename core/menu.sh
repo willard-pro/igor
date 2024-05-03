@@ -38,10 +38,12 @@ function menu() {
             arguments_array=($arguments)
 
             run_command_condition $command "${arguments_array[@]}"
-
+            
             if [ $? -eq 0 ]; then
                 options+=("$option")
-            fi             
+            else
+                log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$menu_condition${RESET} failed"
+            fi
         else
             options+=("$option")
         fi

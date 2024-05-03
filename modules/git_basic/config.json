@@ -20,17 +20,17 @@
         {
           "name": "Create Branch",
           "command": "menu:create_branch",
-          "condition":"is_branch 'develop'"
+          "condition":"is_branch develop"
         },
         {
           "name": "Create Pull Request",
           "command": "create_pr",
-          "condition":"!is_branch 'main' 'develop'"
+          "condition":"is_branch main"
         },
         {
           "name": "Prune Local Branches",
           "command": "clean_branches",
-          "condition":"is_branch 'develop'"
+          "condition":"is_branch develop"
         }
       ]
     },
