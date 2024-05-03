@@ -1,5 +1,5 @@
 # Function to log messages with different log levels
-log() {
+function log() {
     local level=$1
     local message=$2
     
@@ -22,6 +22,12 @@ log() {
             echo "Unknown log level: $level"
             ;;
     esac
+}
+
+function log_phrase() {
+    # Get a random line from the file
+    local random_phrase=$(shuf -n 1 "$config_dir/phrases.txt")
+    log INFO "$random_phrase"
 }
 
 print_array() {

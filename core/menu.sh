@@ -61,10 +61,16 @@ function menu() {
             options+=("$option")
         fi
     done
+    options+=("Exit")
 
     PS3="Select action to take: "
     select option in "${options[@]}"; do
         if [[ " ${options[@]} " =~ " $option " ]]; then
+
+            if [[ $option == "Exit" ]]; then
+                log_phrase
+                exit 0
+            fi
 
             local selected_command=$(jq -r --arg selected "$option" --arg menu_name "$menu_name"  '.menus[] | select (.menu == $menu_name) | .options[] | select (.name == $selected).command' < $module_config)
 

@@ -52,6 +52,7 @@ run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please i
 if [ $? -eq 0 ]; then
 	exit 1
 fi
+# add shuf as required command
 
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
@@ -60,10 +61,16 @@ banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "
 options=("${modules[@]}")  # Using modules as options
+options+=("Exit")
 
-select type in "${options[@]}"; do
-	if [[ " ${options[@]} " =~ " $type " ]]; then
-		selected_module_source=$(jq -r --arg selected "$type" '.modules[] | select(.name == $selected) | .source' < "$config_dir/user.json")
+select option in "${options[@]}"; do
+	if [[ " ${options[@]} " =~ " $option " ]]; then
+		if [[ $option == "Exit" ]]; then
+			log_phrase
+			exit 0
+		fi
+
+		selected_module_source=$(jq -r --arg selected "$option" '.modules[] | select(.name == $selected) | .source' < "$config_dir/user.json")
 		load_module $selected_module_source
         break
     else
