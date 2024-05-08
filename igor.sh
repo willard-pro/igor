@@ -42,7 +42,6 @@ for core_file in "$core_dir"/*.sh; do
     fi
 done
 
-
 # Parse command line options
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -109,10 +108,8 @@ fi
 modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
 
 
-
-
-log INFO "Script values are stored during execution is available at ${BOLD}$file_store${RESET}"
-log INFO "Comands executed can be found in ${BOLD}$command_dir${RESET}"
+log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
+log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 
 banner "$config_dir/banner.txt"
 

@@ -1,4 +1,8 @@
 {
+  "module": {
+    "name": "Module Administration",
+    "type": "bash"
+  },  
   "required": {
     "commands": [
       "zip"
@@ -35,18 +39,18 @@
                 {
                   "name": "Zip file",
                   "value": "zip"
+                },
+                {
+                  "name": "URL",
+                  "value": "url"
                 }
               ]
             }
           ]
         },
         {
-          "prompt": "Enter path to module directory",
-          "format": "string"
-        },
-        {
-          "prompt": "Enter path to zip file",
-          "format": "string"
+          "prompt": "Enter path to module source",
+          "format": "string",
         },
         {
           "prompt": "Do you wish to continue and install '${command:get_module_name}'",

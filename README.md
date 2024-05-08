@@ -10,3 +10,5 @@ Options:
   --debug                    enables debug logging
 
 ```
+
+# Modules

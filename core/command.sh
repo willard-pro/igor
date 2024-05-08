@@ -1,6 +1,8 @@
 
 command_result=""
 
+declare -A command_results
+
 function run_command() {
 	local module_name=$1
 	local command=$2
@@ -39,6 +41,7 @@ function run_command() {
 	store_peek
 
 	command_result="$store_value"
+    command_results["$module_name.$command"]="$command_result"
 
 	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$store_value${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
 

@@ -1,4 +1,8 @@
 {
+  "module": {
+    "name": "Git Basic",
+    "type": "bash"
+  },
   "required": {
     "commands": [
       "awk",
