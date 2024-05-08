@@ -37,6 +37,8 @@ function check_commands() {
     if [ "$mandatory_failed" -gt 0 ]; then
         log ERROR "Failed ${BOLD}$mandatory_failed${RESET} of the required ${BOLD}$mandatory${RESET} commands, please address them and retry!"
         exit 1
+    else 
+        log DEBUG "Required commands passed on module ${BOLD}$module_name${RESET}"
     fi
     # if [ "$optional_failed" -gt 0 ]; then
     #     echo
@@ -55,7 +57,7 @@ function check_checks() {
     local mandatory_failed=0
 
 
-    local checks=$(jq -r '.required.checks[] | .command // empty' < $module_config | tr -d "'")
+    local checks=$(jq -r '.required.checks[] | .command' < $module_config | tr -d "'")
 
     # Loop over the extracted checks
     for check in $checks; do
@@ -76,7 +78,10 @@ function check_checks() {
     if [ "$mandatory_failed" -gt 0 ]; then
         log ERROR "Failed ${BOLD}$mandatory_failed${RESET} of the required ${BOLD}$mandatory${RESET} checks, please address them and retry!"
         exit 1
+    else 
+        log DEBUG "Required checks passed on module ${BOLD}$module_name${RESET}"
     fi
+    
     # if [ "$optional_failed" -gt 0 ]; then
     #     echo
     #     echo -e "${YELLOW}Failed ${RESET}$optional_failed${YELLOW} of the optional ${RESET}$optional${YELLOW} checks, please keep in mind some functionality will not be supported${RESET}."

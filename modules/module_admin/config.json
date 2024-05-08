@@ -2,7 +2,7 @@
   "module": {
     "name": "Module Administration",
     "type": "bash"
-  },  
+  },
   "required": {
     "commands": [
       "zip"
@@ -33,28 +33,31 @@
             {
               "options": [
                 {
-                  "name": "Directory",
-                  "value": "dir"
+                  "name": "Official modules site",
+                  "value": "official",
+                  "command": "menu:list_modules"
                 },
                 {
-                  "name": "Zip file",
+                  "name": "Custom module packaged in a zip file",
                   "value": "zip"
-                },
-                {
-                  "name": "URL",
-                  "value": "url"
                 }
               ]
             }
           ]
         },
         {
-          "prompt": "Enter path to module source",
-          "format": "string",
-        },
+          "prompt": "Enter path to module package",
+          "format": "string"
+        }
+      ]
+    },
+    {
+      "menu": "list_modules",
+      "command": "install_module",
+      "arguments": [
         {
-          "prompt": "Do you wish to continue and install '${command:get_module_name}'",
-          "format": "continue"
+          "options": "Select module to remove",
+          "parameters": "${command:get_available_modules}"
         }
       ]
     },

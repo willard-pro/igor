@@ -7,10 +7,11 @@ core_dir="core"
 config_dir="config"
 modules_dir="modules"
 
-# file_store=$(mktemp)
 tmp_dir="tmp"
-file_store=$(mktemp -p "$tmp_dir" "store_XXXX")
-command_dir="$tmp_dir/commands"
+timestamp=$(date +"%Y%m%d%H%M%S")
+
+file_store="$tmp_dir/$timestamp/store.txt"
+command_dir="$tmp_dir/$timestamp/commands"
 
 if [ ! -d "$tmp_dir" ]; then
 	mkdir -p $tmp_dir
@@ -74,6 +75,7 @@ fi
 if [ -v HOME ]; then
 	if [[ ! -d "$HOME/.igor" && $development -eq 0 ]]; then
 		log IGOR "I sense that this is the first time you are making use of my services"
+		log IGOR "If you wish to test or improve my services invoke me with ${BOLD}--develop${RESET}"
 		prompt_user_continue "May I continue and install my workbench"
 		
 		log IGOR "Creating ${BOLD}~/.igor${RESET} directory which will contain configuration and Igor's projects"
@@ -105,7 +107,17 @@ if [ -v HOME ]; then
 	fi
 fi
 
-modules=$(jq -r '.modules[].name' < "$config_dir/user.json")
+modules=()
+
+# Loop over all directories within the "modules" directory
+for module_dir in $modules_dir/*/; do
+    # Check if config.json file exists in the current directory
+    if [ -f "${module_dir}config.json" ]; then
+        # Extract module name using jq and append it to the array
+        module_name=$(jq -r '.module.name' "${module_dir}config.json")
+        modules+=("$module_name")
+    fi
+done	
 
 
 log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
@@ -114,7 +126,7 @@ log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "
-readarray -t options <<< "$modules"
+options=("${modules[@]}")
 options+=("Exit")
 
 select option in "${options[@]}"; do
