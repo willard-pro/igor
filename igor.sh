@@ -107,18 +107,23 @@ if [ -v HOME ]; then
 	fi
 fi
 
-modules=()
+options=()
+declare -A modules
 
 # Loop over all directories within the "modules" directory
 for module_dir in $modules_dir/*/; do
     # Check if config.json file exists in the current directory
     if [ -f "${module_dir}config.json" ]; then
-        # Extract module name using jq and append it to the array
+        # Extract module name using jq
         module_name=$(jq -r '.module.name' "${module_dir}config.json")
-        modules+=("$module_name")
-    fi
-done	
+        module_only_dir="${module_dir#*modules/}"
+        module_only_dir="${module_only_dir::-1}"
 
+        # Store module directory and module name in the associative array
+        modules["$module_name"]="$module_only_dir"
+        options+=("$module_name")
+    fi
+done
 
 log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
@@ -126,7 +131,6 @@ log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 banner "$config_dir/banner.txt"
 
 PS3="Select the desired module's functions to access: "
-options=("${modules[@]}")
 options+=("Exit")
 
 select option in "${options[@]}"; do
@@ -136,7 +140,8 @@ select option in "${options[@]}"; do
 			exit 0
 		fi
 
-		selected_module_source=$(jq -r --arg selected "$option" '.modules[] | select(.name == $selected) | .source' < "$config_dir/user.json")
+echo ${modules["$option"]}
+		selected_module_source=${modules["$option"]}
 		load_module $selected_module_source
         break
     else

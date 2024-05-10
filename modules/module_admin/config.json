@@ -56,7 +56,7 @@
       "command": "install_module",
       "arguments": [
         {
-          "options": "Select module to remove",
+          "options": "Select module to install",
           "parameters": "${command:get_available_modules}"
         }
       ]

@@ -46,13 +46,31 @@ function prompt() {
 
 function prompt_user_choice() {
     local prompt_label=$(echo $argument | jq -r '.options')
-    local prompt_options=$(echo $argument | jq -r '.parameters[].options[] | .name')
-    readarray -t prompt_options_array <<< "$prompt_options"
+    local prompt_options_array=()
+
+    # Test if "arguments" node is an array or a plain node
+    local is_array=$(echo "$argument" | jq '.parameters | type == "array"')
+    if [ "$is_array" == "true" ]; then
+        local prompt_options=$(echo "$argument" | jq -r '.parameters[].options[] | .name')
+    else
+        local prompt_parameters=$(echo "$argument" | jq '.parameters')
+
+        if [[ $prompt_parameters =~ \$\{command:([^}]*)\} ]]; then
+            local command="${BASH_REMATCH[1]}"
+
+            run_command "$module_name" "$command" "${argument_result_array[@]}"
+
+            local prompt_options=$(echo "$command_result" | jq -c 'to_entries | map({name: .key, value: .value}) | [{options: .}]')
+            argument=$(echo "$argument" | jq --argjson var "$prompt_options" '.parameters = $var')
+            prompt_options=$(echo "$argument" | jq -r '.parameters[].options[] | .name')
+        fi        
+    fi
 
     PS3="$prompt_label: "
+    readarray -t prompt_options_array <<< "$prompt_options"
+
     select prompt_option in "${prompt_options_array[@]}"; do
         if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
-
             local selected_prompt_option=$(echo $argument | jq -r --arg selected "$prompt_option" '.parameters[].options[] | select (.name == $selected) | .value')
             prompt_result=$selected_prompt_option
             break
