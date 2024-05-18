@@ -37,12 +37,10 @@ function run_command() {
 	env -i /bin/bash -c "export debug=$debug && export file_store=$file_store && /bin/bash $command_tmp $arguments"
 	local command_exit_value=$?
 
-	store_peek
-
-	command_result="$store_value"
+	command_result=$(store_peek)
     command_results["$module_name.$command"]="$command_result"
 
-	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$store_value${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
+	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$command_result${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
 
 	return $command_exit_value
 }
