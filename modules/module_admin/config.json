@@ -70,7 +70,7 @@
           "parameters": "${command:get_installed_modules}"
         },
         {
-          "prompt": "Do you wish to module xyz",
+          "prompt": "Are you sure you want to remove selected module",
           "format": "continue"
         }
       ]

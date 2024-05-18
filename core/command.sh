@@ -19,18 +19,17 @@ function run_command() {
 	# Trim the trailing space
 	arguments="${arguments% }"
 
-    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET}"
-
     if [ ! -d "$command_dir/$module_name"  ]; then
         mkdir -p "$command_dir/$module_name" 
     fi
 
-    local command_tmp=$(mktemp -p "$command_dir/$module_name" "${command_name}_XXXX")
+    local command_tmp=$(mktemp -p "$command_dir/$module_name" "${command}_XXXX")
     local command_bash="./modules/$module_name/$command.sh"
+
+    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wraped in ${BOLD}$command_tmp${RESET}"
 
     cp "$config_dir/command_template.sh" "$command_tmp"
     
-
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp
 	sed -i "s/\$arguments/$arguments/g" $command_tmp

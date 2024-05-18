@@ -4,6 +4,8 @@ store_value=""
 function store_push() {
 	local value=$1
 
+	log DEBUG "Storin value $value"
+
 	echo "$value" >> $file_store
 }
 

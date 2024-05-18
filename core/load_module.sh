@@ -6,5 +6,5 @@ load_module() {
 	check_prerequisists
 	log DEBUG "Loaded module ${BOLD}$module_name${RESET}"
 
-	menu $module_name main
+	page $module_name main
 }

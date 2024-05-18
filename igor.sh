@@ -37,6 +37,11 @@ for core_file in "$core_dir"/*.sh; do
     # && [ -x "$core_file" ]
     if [ -r "$core_file" ]; then
        	# echo "Importing script: $core_file"
+       	if ! bash -n "$core_file"; then
+    		echo "Syntax errors found in $core_file."
+    		exit 1
+  		fi
+  		
         source "$core_file"
     else
         echo "Warning: Skipping non-readable or non-executable file: $core_file"
@@ -112,6 +117,8 @@ declare -A modules
 
 # Loop over all directories within the "modules" directory
 for module_dir in $modules_dir/*/; do
+	log DEBUG "Scanning $module_dir"
+
     # Check if config.json file exists in the current directory
     if [ -f "${module_dir}config.json" ]; then
         # Extract module name using jq

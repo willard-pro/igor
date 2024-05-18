@@ -15,24 +15,26 @@ function check_commands() {
     local mandatory=0
     local mandatory_failed=0
 
+    local hasMandatory=$(echo "$prompt" | jq 'has(".required.commands")')
+    if [[ $hasMandatory == "true" ]]; then
+        local commands=$(jq -r '.required.commands | @sh' < $module_config | tr -d "'")
 
-    local commands=$(jq -r '.required.commands | @sh' < $module_config | tr -d "'")
+        # Loop over the extracted commands
+        for command in $commands; do
+            ((mandatory++))
 
-    # Loop over the extracted commands
-    for command in $commands; do
-        ((mandatory++))
+            # Extract the message for the specified command
+            local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json)
 
-        # Extract the message for the specified command
-        local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json)
+            # Call the function
+            run_command_exists $command "$message"
 
-        # Call the function
-        run_command_exists $command "$message"
-
-        # Check the exit status of the function
-        if [ $? -eq 0 ]; then
-            ((mandatory_failed++))
-        fi
-    done
+            # Check the exit status of the function
+            if [ $? -eq 0 ]; then
+                ((mandatory_failed++))
+            fi
+        done
+    fi
 
     if [ "$mandatory_failed" -gt 0 ]; then
         log ERROR "Failed ${BOLD}$mandatory_failed${RESET} of the required ${BOLD}$mandatory${RESET} commands, please address them and retry!"
@@ -57,24 +59,27 @@ function check_checks() {
     local mandatory_failed=0
 
 
-    local checks=$(jq -r '.required.checks[] | .command' < $module_config | tr -d "'")
+    local hasMandatory=$(echo "$prompt" | jq 'has(".required.checks")')
+    if [[ $hasMandatory == "true" ]]; then
+        local checks=$(jq -r '.required.checks[] | .command' < $module_config | tr -d "'")
 
-    # Loop over the extracted checks
-    for check in $checks; do
-        ((mandatory++))
+        # Loop over the extracted checks
+        for check in $checks; do
+            ((mandatory++))
 
-        # Extract the message for the specified check
-        local message=$(jq -r --arg check "$check" '.required.checks[] | select(.command == $check) | .message' < $module_config)
+            # Extract the message for the specified check
+            local message=$(jq -r --arg check "$check" '.required.checks[] | select(.command == $check) | .message' < $module_config)
 
-        # Call the function
-        run_command_check $check "$message"
+            # Call the function
+            run_command_check $check "$message"
 
-        # Check the exit status of the function
-        if [ $? -eq 1 ]; then
-            ((mandatory_failed++))
-        fi
-    done  
-
+            # Check the exit status of the function
+            if [ $? -eq 1 ]; then
+                ((mandatory_failed++))
+            fi
+        done  
+    fi
+    
     if [ "$mandatory_failed" -gt 0 ]; then
         log ERROR "Failed ${BOLD}$mandatory_failed${RESET} of the required ${BOLD}$mandatory${RESET} checks, please address them and retry!"
         exit 1

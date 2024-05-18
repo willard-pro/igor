@@ -1,0 +1,45 @@
+{
+  "module": {
+    "name": "Components",
+    "type": "bash"
+  },
+  "pages": [
+    {
+      "name": "main",
+      "label": "Component Administration",
+      "command": "${page:components}",
+      "prompts": [
+        {
+          "label": "Select action to take",
+          "name": "component_action",
+          "options": [
+            {
+              "name": "Start Component(s)",
+              "value": "start"
+            },
+            {
+              "name": "Stop Component(s)",
+              "value": "stop"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "components",
+      "label": "Components",
+      "command": "component_action ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
+      "prompts": [
+        {
+          "label": "",
+          "name": "get_component",
+          "options": "${command:get_components}"
+        },
+        {
+          "label": "Are you sure you want to ${value:page.main.prompt.component_action} component ${value:prompt.get_component}",
+          "format": "yn"
+        }
+      ]
+    }
+  ]
+}
