@@ -1,6 +1,7 @@
 
 function replace_values() {
     local input_string="$1"
+
     local output_string="$input_string"
     local pattern='\$\{value:([^}]+)\}'
 
@@ -19,6 +20,7 @@ function replace_values() {
 
 function get_values() {
     local input_string="$1"
+
     local -a result_array=()
     local pattern='\$\{value:([^}]+)\}'
 
@@ -68,7 +70,7 @@ function build_options() {
         json_string=$(echo "$json_string" | jq -c --argjson option "$option_json" '.options += [$option]')
     done
 
-    echo "$json_string"
+    echo "$json_string" 
 }
 
 function build_option() {

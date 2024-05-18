@@ -16,6 +16,7 @@ fi
 
 if is_array $command_result; then
 	tmp_result=$(array_to_string "${$command_result[@]}")
+	echo "result = $tmp_result"
 	store_push "$command=$tmp_result"
 else
 	store_push "$command=$$command_result"

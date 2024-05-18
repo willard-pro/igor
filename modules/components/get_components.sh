@@ -1,5 +1,5 @@
 
-get_components_result=()
+get_components_result=""
 
 function get_components() {
 	declare -A component_options=()

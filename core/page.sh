@@ -1,5 +1,6 @@
 
-declare -A page_prompt_results
+prompt_result=""
+declare -A page_prompt_results=()
 
 function banner() {
     local filename=$1
@@ -68,11 +69,11 @@ function prompts() {
 
         # Now you can access individual elements of the Bash array
         for prompt in "${prompt_array[@]}"; do
+            local prompt_name=$(echo "$prompt" | jq -r '.name')
+
             local hasOptions=$(echo "$prompt" | jq 'has("options")')
             if [[ $hasOptions == "true" ]]; then
                 prompt_user_options
-                
-                # local prompt_result=$(prompt_user_options)
                 page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
             fi
 
@@ -98,6 +99,8 @@ function prompt_user_options() {
     local prompt_label=$(echo $prompt | jq -r '.label')
     local prompt_options_array=()
 
+    prompt_label=$(replace_values "$prompt_label")
+
     # Test if "prompts" node is an array or a plain node
     local is_array=$(echo "$prompt" | jq '.options | type == "array"')
     if [ "$is_array" == "true" ]; then
@@ -110,16 +113,15 @@ function prompt_user_options() {
             local prompt_result_array=$(get_values $command)
             run_command "$module_name" "$command" "${prompt_result_array[@]}"
 
-            local prompt_options=$(echo "$command_result" | jq -c 'to_entries | map({name: .key, value: .value}) | [{options: .}]')
-            prompt=$(echo "$prompt" | jq --argjson var "$prompt_options" '.parameters = $var')
-            prompt_options=$(echo "$prompt" | jq -r '.parameters[].options[] | .name')
+            local generated_options=$(echo "$command_result" | jq '.options')
+            prompt=$(echo "$prompt" | jq --argjson generated_options "$generated_options" '.options = $generated_options')
+            prompt_options=$(echo "$prompt" | jq -r '.options[] | .name')
         fi        
     fi
 
     PS3="$prompt_label: "
     readarray -t prompt_options_array <<< "$prompt_options"
 
-    local prompt_result=""
     select prompt_option in "${prompt_options_array[@]}"; do
         if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
 
@@ -130,8 +132,6 @@ function prompt_user_options() {
             log ERROR "Invalid choice!"
         fi
     done
-
-    echo "$prompt_result"
 }
 
 function prompt_user_question() {

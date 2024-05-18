@@ -31,7 +31,7 @@
       "command": "component_action ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
       "prompts": [
         {
-          "label": "",
+          "label": "Select component to ${value:page.main.prompt.component_action}",
           "name": "get_component",
           "options": "${command:get_components}"
         },
