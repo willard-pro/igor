@@ -37,15 +37,17 @@ function page() {
             page_label="${page_label/\$\{command:$command\}/$command_result}"
         fi
         
+        echo
         echo -e "${BG_WHITE}${BLACK}${BOLD}$page_label${RESET}"
+
     else
         log DEBUG "page ${BOLD}$page_name${RESET}"
     fi
 
-    prompts $module_name $page_name
+    page_prompts $module_name $page_name
 }
 
-function prompts() {
+function page_prompts() {
     local module_name=$1
     local page_name=$2
 
@@ -69,19 +71,22 @@ function prompts() {
 
         # Now you can access individual elements of the Bash array
         for prompt in "${prompt_array[@]}"; do
+            log DEBUG "Preparing prompt $prompt"
+
             local prompt_name=$(echo "$prompt" | jq -r '.name')
 
             local hasOptions=$(echo "$prompt" | jq 'has("options")')
             if [[ $hasOptions == "true" ]]; then
-                prompt_user_options
-                page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
+                page_prompt_user_options
+            fi 
+
+            local hasFormat=$(echo "$prompt" | jq 'has("format")')
+            if [[ $hasFormat == "true" ]]; then
+                page_prompt_user_question
             fi
 
-            local hasFormat=$(echo "$format" | jq 'has("format")')
-            if [[ $hasFormat == "true" ]]; then
-                prompt_user_question
-                page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
-            fi            
+            log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
+            page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
         done
         log DEBUG "Preparing to run command $command"
 
@@ -89,13 +94,15 @@ function prompts() {
             local command_page_name="${BASH_REMATCH[1]}"
             page $module_name $command_page_name
         else
-            local prompt_result_array=$(get_values $command)
-            run_command "$module_name" "$command" "${prompt_result_array[@]}"
+            local command_arguments=$(get_values "$command")
+            local command_only="${command%% *}"
+            
+            run_command "$module_name" "$command_only" ${command_arguments[@]}
         fi
     fi    
 }
 
-function prompt_user_options() {
+function page_prompt_user_options() {
     local prompt_label=$(echo $prompt | jq -r '.label')
     local prompt_options_array=()
 
@@ -110,8 +117,11 @@ function prompt_user_options() {
 
         if [[ $prompt_options =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
-            local prompt_result_array=$(get_values $command)
-            run_command "$module_name" "$command" "${prompt_result_array[@]}"
+            
+            local command_arguments=$(get_values "$command")
+            local command_only="${command%% *}"
+
+            run_command "$module_name" "$command_only" ${command_arguments[@]}
 
             local generated_options=$(echo "$command_result" | jq '.options')
             prompt=$(echo "$prompt" | jq --argjson generated_options "$generated_options" '.options = $generated_options')
@@ -134,36 +144,24 @@ function prompt_user_options() {
     done
 }
 
-function prompt_user_question() {
-    local prompt_label=$(echo $argument | jq -r '.prompt')
-    local prompt_format=$(echo $argument | jq -r '.format')
-        
-    if [[ $prompt_label =~ \$\{command:([^}]*)\} ]]; then
-        local command="${BASH_REMATCH[1]}"
+function page_prompt_user_question() {
+    local prompt_label=$(echo $prompt | jq -r '.label')
+    local prompt_format=$(echo $prompt | jq -r '.format')
 
-        run_command "$module_name" "$command" "${argument_result_array[@]}"
-        prompt_label="${prompt_label/\$\{command:$command\}/$command_result}"        
-    fi
-
-    echo "${argument_result_array[1]}"
-
-    if [[ $prompt_label =~ \$\{arguments\[([0-9]+)\]\} ]]; then
-        local argument="${BASH_REMATCH[1]}"
-        prompt_label="${prompt_label//\$\{arguments\[$argument\]\}/$argument_result_array}"
-    fi
+    prompt_label=$(replace_values "$prompt_label")
 
     case $prompt_format in
         "number")
-            prompt_user_number "$prompt_label"
+            page_prompt_user_number "$prompt_label"
             ;;
         "yn")
-            prompt_user_yn "$prompt_label"
+            page_prompt_user_yn "$prompt_label"
             ;;
         "continue")
-            prompt_user_continue "$prompt_label"
+            page_prompt_user_continue "$prompt_label"
             ;;
         "string")
-            prompt_user_text "$prompt_label"
+            page_prompt_user_text "$prompt_label"
             ;;
         *)
             log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
@@ -175,7 +173,7 @@ function prompt_user_question() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_yn() {
+function page_prompt_user_yn() {
     local prompt_label=$1
 
     prompt_label="${prompt_label} [y/N]"
@@ -195,10 +193,10 @@ function prompt_user_yn() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_continue() {
+function page_prompt_user_continue() {
     local prompt_label=$1
     
-    prompt_user_yn "$prompt_label"
+    page_prompt_user_yn "$prompt_label"
 
     if [[ "$prompt_result" =~ ^[nN]$ ]]; then
         log_phrase
@@ -209,7 +207,7 @@ function prompt_user_continue() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_text() {
+function page_prompt_user_text() {
     local prompt_label=$1
 
     while true; do
@@ -222,7 +220,7 @@ function prompt_user_text() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_number() {
+function page_prompt_user_number() {
     local prompt_label=$1
 
     while true; do

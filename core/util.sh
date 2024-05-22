@@ -9,6 +9,10 @@ function replace_values() {
     while [[ $output_string =~ $pattern ]]; do
         # Extract the key
         key="${BASH_REMATCH[1]}"
+        if [[ ! $key == page.* ]]; then
+            key="page.$page_name.$key"
+        fi
+        
         # Get the value from the associative array, if it exists
         replacement="${page_prompt_results[$key]}"
         # Replace the pattern with the value in the string
@@ -26,9 +30,15 @@ function get_values() {
 
     while [[ $input_string =~ $pattern ]]; do
         local match="${BASH_REMATCH[0]}"
+        
         local key="${BASH_REMATCH[1]}"
+        if [[ ! $key == page.* ]]; then
+            key="page.$page_name.$key"
+        fi
+
         local replacement="${page_prompt_results[$key]}"
         input_string="${input_string//$match/$replacement}"
+
         result_array+=("$replacement")
     done
 

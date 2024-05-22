@@ -21,6 +21,9 @@ function log() {
                 echo -e "${BLUE}[DEBUG]${RESET} $message"
             fi
             ;;
+        "TRACE")
+            echo -e "${BG_RED}${WHITE}[TRACE]${RESET} $message"
+            ;;
         *)
             echo "Unknown log level: $level"
             ;;

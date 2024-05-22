@@ -81,6 +81,8 @@ function prompt_user_choice() {
 }
 
 function prompt_user_question() {
+log TRACE "omg"
+
     local prompt_label=$(echo $argument | jq -r '.prompt')
     local prompt_format=$(echo $argument | jq -r '.format')
         
