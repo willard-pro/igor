@@ -23,9 +23,15 @@ function page() {
     local module_name=$1
     local page_name=$2
 
-    log DEBUG "Building page $page_name found within module $module_name"
+    log DEBUG "Building page ${BOLD}$page_name${RESET} found within module ${BOLD}$module_name${RESET}"
 
     local module_config="$modules_dir/$module_name/config.json"
+
+    local has_page=$(jq -r --arg page_name "$page_name" '.pages | map(.name == $page_name) | any' < $module_config)
+    if [[ $has_page == "false" ]]; then
+        log ERROR "Page ${BOLD}$page_name${RESET} NOT FOUND within module ${BOLD}$module_name${RESET}"
+        exit 1
+    fi
 
     local page_label=$(jq -r --arg page_name "$page_name" '.pages[] | select(.name == $page_name) | .label' < $module_config)
     if [[ $page_label != "null" ]]; then
