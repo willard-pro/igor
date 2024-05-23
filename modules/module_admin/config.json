@@ -1,79 +1,83 @@
 {
   "module": {
-    "name": "Module Administration",
+    "name": "Modules",
     "type": "bash"
   },
-  "required": {
-    "commands": [
-      "zip"
-    ]
-  },
-  "menus": [
+  "pages": [
     {
-      "menu": "main",
-      "label": "Module Aministration",
-      "options": [
+      "name": "main",
+      "label": "Module Administration",
+      "command": "${page:modules}",
+      "prompts": [
         {
-          "name": "Install Module",
-          "command": "menu:install_module"
-        },
-        {
-          "name": "Remove Module",
-          "command": "menu:remove_module"
-        }
-      ]
-    },
-    {
-      "menu": "install_module",
-      "command": "install_module",
-      "arguments": [
-        {
-          "options": "Select module source",
-          "parameters": [
+          "label": "Select action to take",
+          "name": "module_action",
+          "options": [
             {
-              "options": [
-                {
-                  "name": "Official modules site",
-                  "value": "official",
-                  "command": "menu:list_modules"
-                },
-                {
-                  "name": "Custom module packaged in a zip file",
-                  "value": "zip"
-                }
-              ]
+              "name": "Configure",
+              "value": "configure",
+              "condition": "!${command:is_configured}",
+              "command": "${page:configure}"
+            },
+            {
+              "name": "Start Module(s)",
+              "value": "start",
+              "condition": "${command:is_configured}"
+            },
+            {
+              "name": "Stop Module(s)",
+              "value": "stop",
+              "condition": "${command:is_configured}"
             }
           ]
-        },
-        {
-          "prompt": "Enter path to module package",
-          "format": "string"
         }
       ]
     },
     {
-      "menu": "list_modules",
-      "command": "install_module",
-      "arguments": [
+      "name": "modules",
+      "label": "Modules",
+      "command": "abc ${value:page.main.prompt.module_action}  ${value:prompt.get_module}",
+      "prompts": [
         {
-          "options": "Select module to install",
-          "parameters": "${command:get_available_modules}"
+          "label": "Select module to ${value:page.main.prompt.module_action}",
+          "name": "get_module",
+          "options": "${command:get_installed_modules}"
+        },
+        {
+          "label": "Are you sure you want to ${value:page.main.prompt.module_action} module ${value:prompt.get_module}",
+          "name": "confirm_module_action",
+          "format": "yn"
         }
       ]
     },
     {
-      "menu": "remove_module",
-      "command": "remove_module",
-      "arguments": [
+      "name": "configure",
+      "label": "Module Administration Configuration",
+      "command": "${page:modules}",
+      "prompts": [
         {
-          "options": "Select module to remove",
-          "parameters": "${command:get_installed_modules}"
-        },
-        {
-          "prompt": "Are you sure you want to remove selected module",
-          "format": "continue"
+          "label": "Select the environment applicable",
+          "name": "environment",
+          "options": [
+            {
+              "name": "Local",
+              "value": "local"
+            },
+            {
+              "name": "UAT",
+              "value": "uat"
+            },
+            {
+              "name": "Demo",
+              "value": "demo"
+            },
+            {
+              "name": "Production",
+              "value": "prod"
+            }
+          ]
         }
       ]
-    }
+    }    
   ]
 }

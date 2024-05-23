@@ -122,13 +122,19 @@ for module_dir in $modules_dir/*/; do
     # Check if config.json file exists in the current directory
     if [ -f "${module_dir}config.json" ]; then
         # Extract module name using jq
-        module_name=$(jq -r '.module.name' "${module_dir}config.json")
-        module_only_dir="${module_dir#*modules/}"
-        module_only_dir="${module_only_dir::-1}"
 
-        # Store module directory and module name in the associative array
-        modules["$module_name"]="$module_only_dir"
-        options+=("$module_name")
+        cat "${module_dir}config.json" | jq -e > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+        	log ERROR "Unable to parse ${BOLD}${module_dir}config.json${RESET}"
+        else
+	        module_name=$(jq -r '.module.name' "${module_dir}config.json")
+	        module_only_dir="${module_dir#*modules/}"
+	        module_only_dir="${module_only_dir::-1}"
+
+	        # Store module directory and module name in the associative array
+	        modules["$module_name"]="$module_only_dir"
+	        options+=("$module_name")
+	    fi
     fi
 done
 
