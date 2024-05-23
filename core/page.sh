@@ -75,13 +75,20 @@ function page_prompts() {
 
             local prompt_name=$(echo "$prompt" | jq -r '.name')
 
-            local hasOptions=$(echo "$prompt" | jq 'has("options")')
-            if [[ $hasOptions == "true" ]]; then
+            local has_options=$(echo "$prompt" | jq 'has("options")')
+            if [[ $has_options == "true" ]]; then
                 page_prompt_user_options
+
+                local has_command=$(echo "$prompt" | jq --arg value "$prompt_result" '.options[] | select(.value == $value) | has("command")')
+                if [[ $has_command == "true" ]]; then
+                    log DEBUG "Specific command defined in prompt $prompt_name, overrides the default command"
+                    command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
+                    break
+                fi
             fi 
 
-            local hasFormat=$(echo "$prompt" | jq 'has("format")')
-            if [[ $hasFormat == "true" ]]; then
+            local has_format=$(echo "$prompt" | jq 'has("format")')
+            if [[ $has_format == "true" ]]; then
                 page_prompt_user_question
             fi
 
@@ -89,6 +96,7 @@ function page_prompts() {
             page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
         done
         log DEBUG "Preparing to run command $command"
+
 
         if [[ $command =~ \$\{page:([^}]*)\} ]]; then
             local command_page_name="${BASH_REMATCH[1]}"
