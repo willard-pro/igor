@@ -1,6 +1,8 @@
 
+config_dir="config"
+
 function is_configured() {
-	if [[ -f "$HOME/.igor/config/env.json" ]]; then
+	if [[ -f "$config_dir/env.json" ]]; then
     	return 0
 	else
     	return 1

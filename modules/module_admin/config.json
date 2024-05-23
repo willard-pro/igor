@@ -20,13 +20,13 @@
               "command": "${page:configure}"
             },
             {
-              "name": "Start Module(s)",
-              "value": "start",
+              "name": "Install Module",
+              "value": "install",
               "condition": "${command:is_configured}"
             },
             {
-              "name": "Stop Module(s)",
-              "value": "stop",
+              "name": "Remove Module",
+              "value": "remove",
               "condition": "${command:is_configured}"
             }
           ]
@@ -53,7 +53,7 @@
     {
       "name": "configure",
       "label": "Module Administration Configuration",
-      "command": "${page:modules}",
+      "command": "configure_env ${value:prompt.environment}",
       "prompts": [
         {
           "label": "Select the environment applicable",
