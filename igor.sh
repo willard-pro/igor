@@ -6,6 +6,7 @@ development=0
 core_dir="core"
 config_dir="config"
 modules_dir="modules"
+commands_dir="commands"
 
 tmp_dir="tmp"
 timestamp=$(date +"%Y%m%d%H%M%S")
@@ -47,6 +48,10 @@ for core_file in "$core_dir"/*.sh; do
         echo "Warning: Skipping non-readable or non-executable file: $core_file"
     fi
 done
+
+
+source "$commands_dir/banner.sh"
+source "$commands_dir/print_box.sh"
 
 # Parse command line options
 while [[ "$#" -gt 0 ]]; do
@@ -141,7 +146,17 @@ done
 log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 
+
+igor_environment="Unknown"
+if [ -f "$config_dir/env.json" ]; then
+	igor_environment=$(jq -r '.environment' "$config_dir/env.json")
+fi
+
+declare -A box_key_values
+box_key_values["Environment"]=$(jq -r '.environment[] | select(.name == "local") | .label' "$config_dir/default.json")
+
 banner "$config_dir/banner.txt"
+print_box box_key_values
 
 PS3="Select the desired module's functions to access: "
 options+=("Exit")

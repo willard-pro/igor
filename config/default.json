@@ -1,4 +1,26 @@
 {
+	"environment": [
+		{
+			"name": "local",
+			"label": "Local",
+			"banner_color": "WHITE"
+		},
+		{
+			"name": "uat",
+			"label": "UAT",
+			"banner_color": "YELLOW"
+		},
+		{
+			"name": "demo",
+			"label": "Demo",
+			"banner_color": "ORANGE"
+		},
+		{
+			"name": "prod",
+			"label": "Production",
+			"banner_color": "RED"
+		}
+	],
 	"required": {
 		"commands": [
 			{

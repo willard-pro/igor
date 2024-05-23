@@ -49,6 +49,19 @@
           "format": "yn"
         }
       ]
+    },
+    {
+      "name": "configure",
+      "label": "Component Administration Configuration",
+      "command": "abc ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
+      "prompts": [
+        {
+          "label": "Provide the absolute path to directory containing the components",
+          "name": "component_base_directory",
+          "format": "dir"
+        }
+      ]
     }
+
   ]
 }
