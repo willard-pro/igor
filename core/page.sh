@@ -133,7 +133,7 @@ function page_prompt_user_options() {
         local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | has("condition")')
 
         if [[ $has_condition == "true" ]]; then
-            local prompt_option_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
+            local prompt_option_condition=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
 
             log DEBUG "Evaluating condition $prompt_option_condition on prompt $prompt_option"
 
@@ -144,8 +144,16 @@ function page_prompt_user_options() {
                 local command_only="${command%% *}"
 
                 run_command "$module_name" "$command_only" ${command_arguments[@]}
+                local command_condition_exit_value=$?
 
-                if [ $? -eq 0 ]; then
+                local not_command=0
+                if [[ $prompt_option_condition == \!* ]]; then
+                    not_command=1
+                fi
+
+                local command_condition_result=$(( not_command ^ command_condition_exit_value))
+
+                if [  $command_condition_result -eq 0 ]; then
                     prompt_options_array+=("$prompt_option")
                 else
                     log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
