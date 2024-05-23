@@ -1,5 +1,10 @@
 #!/bin/bash
 
+debug=$debug
+development=$development
+
+env_file=$env_file
+
 source core/log.sh
 source core/store.sh
 source core/colors.sh
@@ -16,7 +21,6 @@ fi
 
 if is_array $command_result; then
 	tmp_result=$(array_to_string "${$command_result[@]}")
-	echo "result = $tmp_result"
 	store_push "$command=$tmp_result"
 else
 	store_push "$command=$$command_result"

@@ -11,6 +11,7 @@ commands_dir="commands"
 tmp_dir="tmp"
 timestamp=$(date +"%Y%m%d%H%M%S")
 
+env_file="$config_dir/env.json"
 file_store="$tmp_dir/$timestamp/store.txt"
 command_dir="$tmp_dir/$timestamp/commands"
 
@@ -48,11 +49,6 @@ for core_file in "$core_dir"/*.sh; do
         echo "Warning: Skipping non-readable or non-executable file: $core_file"
     fi
 done
-
-
-source "$commands_dir/banner.sh"
-source "$commands_dir/to_color.sh"
-source "$commands_dir/print_box.sh"
 
 # Parse command line options
 while [[ "$#" -gt 0 ]]; do
@@ -144,8 +140,10 @@ for module_dir in $modules_dir/*/; do
     fi
 done
 
-log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
-log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
+if [[ $development -eq 1 ]]; then
+	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
+	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
+fi
 
 igor_environment="unknown"
 if [ -f "$config_dir/env.json" ]; then

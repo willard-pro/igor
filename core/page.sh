@@ -272,6 +272,21 @@ function page_prompt_user_number() {
 }
 
 
+function page_prompt_user_directory() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if is_dir "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter a valid directory."
+        fi                
+    done
+}
+
 # Function to check if input is an integer
 is_number() {
     local value=$1
@@ -295,6 +310,19 @@ is_yn() {
         return 1
     fi
 }
+
+
+# Function to check if input is valid directory
+is_dir() {
+    local value=$1
+
+    if [ -d "$value"  ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 
 # function single_select() {
 

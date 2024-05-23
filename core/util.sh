@@ -90,3 +90,69 @@ function build_option() {
     local json_string=$(jq -c -n --arg name "$name" --arg value "$value" '{name: $name, value: $value}')
     echo "$json_string"
 }
+
+function banner() {
+    local filename=$1
+    local font_color=$2
+
+    # Check if the file exists
+    if [ ! -f "$filename" ]; then
+        log ERROR "Banner not found, ${BOLD}$filename${RESET}"
+        exit 1
+    fi
+
+    if [ ! -v font_color ]; then
+        font_color=${WHITE}
+    fi
+
+    echo
+    # Read the file line by line and echo each line with -e option
+    while IFS= read -r line; do
+        echo -e "$font_color$line${RESET}"
+    done < "$filename"
+    echo
+}
+
+function print_box() {
+    local -n key_value_pairs=$1
+
+    local box_width=29
+    local key_value_width=$((box_width - 4))
+
+    printf "╔"
+    printf "═%.0s" $(seq 1 $((box_width - 2)))
+    printf "╗\n"
+
+  # Iterate over the keys and values of the associative array
+    for key in "${!key_value_pairs[@]}"; do
+        local value="${key_value_pairs[$key]}"
+        printf "║ %-${key_value_width}s ║\n" "$key: $value"
+    done
+
+    printf "╚"
+    printf "═%.0s" $(seq 1 $((box_width - 2)))
+    printf "╝\n"
+
+}
+
+function is_module_configured() {
+    local module_name="$1"
+    has_configuration_property $module_name "configured"
+}
+
+function has_configuration_property() {
+    local module_name="$1"
+    local property_name="$2"
+
+    jq --arg name "$module_name" --arg key "$property_name" '[.modules[] | select(.name == $name) | has($key)] | any' "$env_file"
+}
+
+function set_configurtion_property() {
+    local module_name="$1"
+    local property_name="$2"
+    local property_value="$3"
+
+    echo "$json" | jq --arg name "$module_name" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then . + {($key): $value} else . end)'
+}
+
+#jq --arg name "$component" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then .configured = "true" else . end)')

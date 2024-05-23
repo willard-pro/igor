@@ -35,7 +35,10 @@ function run_command() {
     log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wraped in ${BOLD}$command_tmp${RESET}"
 
     cp "$config_dir/command_template.sh" "$command_tmp"
-    
+
+    sed -i "s/\$debug/$debug/g" $command_tmp
+    sed -i "s/\$development/$development/g" $command_tmp
+    sed -i "s|\$env_file|$env_file|g" $command_tmp
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp
 	sed -i "s/\$arguments/$arguments/g" $command_tmp
