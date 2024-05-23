@@ -14,12 +14,20 @@
           "name": "component_action",
           "options": [
             {
+              "name": "Configure",
+              "value": "configure",
+              "condition": "!${command:is_configured}",
+              "command": "${page:configure}"
+            },
+            {
               "name": "Start Component(s)",
-              "value": "start"
+              "value": "start",
+              "condition": "${command:is_configured}"
             },
             {
               "name": "Stop Component(s)",
-              "value": "stop"
+              "value": "stop",
+              "condition": "${command:is_configured}"
             }
           ]
         }
@@ -28,7 +36,7 @@
     {
       "name": "components",
       "label": "Components",
-      "command": "component_action ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
+      "command": "command:docker ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
       "prompts": [
         {
           "label": "Select component to ${value:page.main.prompt.component_action}",

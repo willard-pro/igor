@@ -108,14 +108,13 @@ function page_prompt_user_options() {
 
     prompt_label=$(replace_values "$prompt_label")
 
-    # Test if "prompts" node is an array or a plain node
     local is_array=$(echo "$prompt" | jq '.options | type == "array"')
     if [ "$is_array" == "true" ]; then
-        local prompt_options=$(echo "$prompt" | jq -r '.options[] | .name')
+        local prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
     else
-        local prompt_options=$(echo "$prompt" | jq '.options')
+        local prompt_options_all=$(echo "$prompt" | jq '.options')
 
-        if [[ $prompt_options =~ \$\{command:([^}]*)\} ]]; then
+        if [[ $prompt_options_all =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
             
             local command_arguments=$(get_values "$command")
@@ -125,13 +124,42 @@ function page_prompt_user_options() {
 
             local generated_options=$(echo "$command_result" | jq '.options')
             prompt=$(echo "$prompt" | jq --argjson generated_options "$generated_options" '.options = $generated_options')
-            prompt_options=$(echo "$prompt" | jq -r '.options[] | .name')
+            prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
         fi        
-    fi
+    fi    
+
+    readarray -t prompt_options <<< "$prompt_options_all"
+    for prompt_option in "${prompt_options[@]}"; do
+        local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | has("condition")')
+
+        if [[ $has_condition == "true" ]]; then
+            local prompt_option_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
+
+            log DEBUG "Evaluating condition $prompt_option_condition on prompt $prompt_option"
+
+            if [[ $prompt_option_condition =~ \$\{command:([^}]*)\} ]]; then
+                local command="${BASH_REMATCH[1]}"
+                
+                local command_arguments=$(get_values "$command")
+                local command_only="${command%% *}"
+
+                run_command "$module_name" "$command_only" ${command_arguments[@]}
+
+                if [ $? -eq 0 ]; then
+                    prompt_options_array+=("$prompt_option")
+                else
+                    log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
+                fi
+
+            fi        
+        else
+            prompt_options_array+=("$prompt_option")
+        fi
+    done
+    # prompt_options_array+=("Exit")
+
 
     PS3="$prompt_label: "
-    readarray -t prompt_options_array <<< "$prompt_options"
-
     select prompt_option in "${prompt_options_array[@]}"; do
         if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
 
