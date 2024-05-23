@@ -9,7 +9,7 @@ function banner() {
         exit 1
     fi
 
-    if [ -v font_color ]; then
+    if [ ! -v font_color ]; then
     	font_color=${WHITE}
     fi
 

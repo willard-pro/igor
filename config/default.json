@@ -1,9 +1,14 @@
 {
 	"environment": [
 		{
+			"name": "unknown",
+			"label": "Unknown",
+			"banner_color": "WHITE"
+		},
+		{
 			"name": "local",
 			"label": "Local",
-			"banner_color": "WHITE"
+			"banner_color": "GREEN"
 		},
 		{
 			"name": "uat",
