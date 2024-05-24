@@ -1,77 +1,76 @@
 
 prompt_result=""
 
-function prompt() {
-    local module_name=$1
-    local menu_name=$2
-
-    local -a argument_result_array
-
-    local module_config="$modules_dir/$module_name/config.json"
-
-    local arguments=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .arguments' < $module_config)
-    local command=$(jq -r --arg menu_name "$menu_name" '.menus[] | select(.menu == $menu_name) | .command' < $module_config)
-
-    log DEBUG "Menu ${BOLD}$menu_name${RESET}"
-
-    # Check if arguments is not empty
-    if [ -n "$arguments" ]; then
-        # Iterate over each argument
-        local json_result=$(echo "$arguments" | jq -c '.[]')
-
-        # Declare an empty array
-        local -a argument_array
-
-        # Read the JSON result into the Bash array
-        readarray -t argument_array <<< "$json_result"
-
-        # Now you can access individual elements of the Bash array
-        for argument in "${argument_array[@]}"; do
-            local hasOptions=$(echo "$argument" | jq 'has("options")')
-            if [[ $hasOptions == "true" ]]; then
-                prompt_user_choice
-                argument_result_array+=("$prompt_result")
-            fi
-
-            local hasPrompt=$(echo "$argument" | jq 'has("prompt")')
-            if [[ $hasPrompt == "true" ]]; then
-                prompt_user_question
-                argument_result_array+=("$prompt_result")
-            fi            
-        done
-
-        run_command "$module_name" "$command" "${argument_result_array[@]}"
-    fi    
-}
-
-function prompt_user_choice() {
-    local prompt_label=$(echo $argument | jq -r '.options')
+function page_prompt_user_options() {
+    local prompt_label=$(echo $prompt | jq -r '.label')
     local prompt_options_array=()
 
-    # Test if "arguments" node is an array or a plain node
-    local is_array=$(echo "$argument" | jq '.parameters | type == "array"')
+    prompt_label=$(replace_values "$prompt_label")
+
+    local is_array=$(echo "$prompt" | jq '.options | type == "array"')
     if [ "$is_array" == "true" ]; then
-        local prompt_options=$(echo "$argument" | jq -r '.parameters[].options[] | .name')
+        local prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
     else
-        local prompt_parameters=$(echo "$argument" | jq '.parameters')
+        local prompt_options_all=$(echo "$prompt" | jq '.options')
 
-        if [[ $prompt_parameters =~ \$\{command:([^}]*)\} ]]; then
+        if [[ $prompt_options_all =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
+            
+            local command_arguments=$(get_values "$command")
+            local command_only="${command%% *}"
 
-            run_command "$module_name" "$command" "${argument_result_array[@]}"
+            run_command "$module_name" "$command_only" ${command_arguments[@]}
 
-            local prompt_options=$(echo "$command_result" | jq -c 'to_entries | map({name: .key, value: .value}) | [{options: .}]')
-            argument=$(echo "$argument" | jq --argjson var "$prompt_options" '.parameters = $var')
-            prompt_options=$(echo "$argument" | jq -r '.parameters[].options[] | .name')
+            local generated_options=$(echo "$command_result" | jq '.options')
+            prompt=$(echo "$prompt" | jq --argjson generated_options "$generated_options" '.options = $generated_options')
+            prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
         fi        
-    fi
+    fi    
+
+    readarray -t prompt_options <<< "$prompt_options_all"
+    for prompt_option in "${prompt_options[@]}"; do
+        local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | has("condition")')
+
+        if [[ $has_condition == "true" ]]; then
+            local prompt_option_condition=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
+
+            log DEBUG "Evaluating condition $prompt_option_condition on prompt $prompt_option"
+
+            if [[ $prompt_option_condition =~ \$\{command:([^}]*)\} ]]; then
+                local command="${BASH_REMATCH[1]}"
+                
+                local command_arguments=$(get_values "$command")
+                local command_only="${command%% *}"
+
+                run_command "$module_name" "$command_only" ${command_arguments[@]}
+                local command_condition_exit_value=$?
+
+                local not_command=0
+                if [[ $prompt_option_condition == \!* ]]; then
+                    not_command=1
+                fi
+
+                local command_condition_result=$(( not_command ^ command_condition_exit_value))
+
+                if [  $command_condition_result -eq 0 ]; then
+                    prompt_options_array+=("$prompt_option")
+                else
+                    log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
+                fi
+
+            fi        
+        else
+            prompt_options_array+=("$prompt_option")
+        fi
+    done
+    # prompt_options_array+=("Exit")
+
 
     PS3="$prompt_label: "
-    readarray -t prompt_options_array <<< "$prompt_options"
-
     select prompt_option in "${prompt_options_array[@]}"; do
         if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
-            local selected_prompt_option=$(echo $argument | jq -r --arg selected "$prompt_option" '.parameters[].options[] | select (.name == $selected) | .value')
+
+            local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
             prompt_result=$selected_prompt_option
             break
         else
@@ -80,38 +79,27 @@ function prompt_user_choice() {
     done
 }
 
-function prompt_user_question() {
-log TRACE "omg"
+function page_prompt_user_question() {
+    local prompt_label=$(echo $prompt | jq -r '.label')
+    local prompt_format=$(echo $prompt | jq -r '.format')
 
-    local prompt_label=$(echo $argument | jq -r '.prompt')
-    local prompt_format=$(echo $argument | jq -r '.format')
-        
-    if [[ $prompt_label =~ \$\{command:([^}]*)\} ]]; then
-        local command="${BASH_REMATCH[1]}"
-
-        run_command "$module_name" "$command" "${argument_result_array[@]}"
-        prompt_label="${prompt_label/\$\{command:$command\}/$command_result}"        
-    fi
-
-    echo "${argument_result_array[1]}"
-
-    if [[ $prompt_label =~ \$\{arguments\[([0-9]+)\]\} ]]; then
-        local argument="${BASH_REMATCH[1]}"
-        prompt_label="${prompt_label//\$\{arguments\[$argument\]\}/$argument_result_array}"
-    fi
+    prompt_label=$(replace_values "$prompt_label")
 
     case $prompt_format in
         "number")
-            prompt_user_number "$prompt_label"
+            page_prompt_user_number "$prompt_label"
             ;;
         "yn")
-            prompt_user_yn "$prompt_label"
+            page_prompt_user_yn "$prompt_label"
             ;;
         "continue")
-            prompt_user_continue "$prompt_label"
+            page_prompt_user_continue "$prompt_label"
             ;;
         "string")
-            prompt_user_text "$prompt_label"
+            page_prompt_user_text "$prompt_label"
+            ;;
+        "dir")
+            page_prompt_user_directory "$prompt_label"
             ;;
         *)
             log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
@@ -123,7 +111,7 @@ log TRACE "omg"
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_yn() {
+function page_prompt_user_yn() {
     local prompt_label=$1
 
     prompt_label="${prompt_label} [y/N]"
@@ -143,10 +131,10 @@ function prompt_user_yn() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_continue() {
+function page_prompt_user_continue() {
     local prompt_label=$1
     
-    prompt_user_yn "$prompt_label"
+    page_prompt_user_yn "$prompt_label"
 
     if [[ "$prompt_result" =~ ^[nN]$ ]]; then
         log_phrase
@@ -157,7 +145,7 @@ function prompt_user_continue() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_text() {
+function page_prompt_user_text() {
     local prompt_label=$1
 
     while true; do
@@ -170,7 +158,7 @@ function prompt_user_text() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function prompt_user_number() {
+function page_prompt_user_number() {
     local prompt_label=$1
 
     while true; do
@@ -185,6 +173,21 @@ function prompt_user_number() {
     done
 }
 
+
+function page_prompt_user_directory() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if is_dir "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter a valid directory."
+        fi                
+    done
+}
 
 # Function to check if input is an integer
 is_number() {
@@ -210,22 +213,14 @@ is_yn() {
     fi
 }
 
-# function single_select() {
 
-#     PS3="Select action to take: "
-#     select option in "${options[@]}"; do
-#         if [[ " ${options[@]} " =~ " $option " ]]; then
+# Function to check if input is valid directory
+is_dir() {
+    local value=$1
 
-#             local selected_command=$(jq -r --arg selected "$option" --arg menu_name "$menu_name"  '.menus[] | select (.menu == $menu_name) | .options[] | select (.name == $selected).command' < $module_config)
-
-#             if [[ $string == menu:* ]]; then
-#                 local sub_menu_name="${string#menu:}"
-#                 menu $module_name $sub_menu_name
-#             fi
-#             break
-#         else
-#             log ERROR "Invalid choice!"
-#         fi
-#     done
-
-# }
+    if [ -d "$value"  ]; then
+        return 0
+    else
+        return 1
+    fi
+}

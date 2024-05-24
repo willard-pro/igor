@@ -1,6 +1,6 @@
 
 
-function is_configured() {
+function is_configured() {	
 	local result=$(is_module_configured "Modules")
 
 	if [[ $result == "true" ]]; then

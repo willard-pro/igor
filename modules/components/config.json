@@ -53,12 +53,13 @@
     {
       "name": "configure",
       "label": "Component Administration Configuration",
-      "command": "abc ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
+      "command": "${configure:done}",
       "prompts": [
         {
           "label": "Provide the absolute path to directory containing the components",
-          "name": "component_base_directory",
-          "format": "dir"
+          "name": "base_dir",
+          "format": "dir",
+          "command": "${configure:set}"
         }
       ]
     }
