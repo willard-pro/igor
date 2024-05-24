@@ -135,11 +135,6 @@ function print_box() {
 
 }
 
-function module_configured() {
-    local module_name="$1"
-    set_configurtion_property "configured" "true"
-}
-
 function is_module_configured() {
     local module_name="$1"
     has_configuration_property $module_name "configured"
@@ -149,7 +144,8 @@ function has_configuration_property() {
     local module_name="$1"
     local property_name="$2"
 
-    jq --arg name "$module_name" --arg key "$property_name" '[.modules[] | select(.name == $name) | has($key)] | any' "$env_file"
+    local result=$(jq --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | has("configured")' "$env_file")
+    echo "$result"
 }
 
 
@@ -160,8 +156,11 @@ function configure_module() {
     local property_value="$4"
 
     case "$command_name" in
+        "done")
+            set_configurtion_property "$module_name" "configured" "true"
+            ;;
         "set")
-            set_configurtion_property "$2" "$3" "$4"
+            set_configurtion_property "$module_name" "$property_name" "$property_value"
             ;;
     esac
 }
@@ -173,8 +172,5 @@ function set_configurtion_property() {
 
     jq --arg name "$module_name" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then . + {($key): $value} else . end)' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
-    log DEBUG "Updated environment configuration for module ${BOLD}$module_name${RESET} ${BOLD}$property_name${RESET}=${BOLD}$property_value${RESET}"
+    log DEBUG "Updated environment configuration for module ${BOLD}$module_name${RESET} setting property ${BOLD}$property_name${RESET}=${BOLD}$property_value${RESET}"
 }
-
-
-#jq --arg name "$component" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then .configured = "true" else . end)')

@@ -1,7 +1,7 @@
 
 
 function is_configured() {	
-	local result=$(is_module_configured "Components")
+	local result=$(is_module_configured "components")
 
 	if [[ $result == "true" ]]; then
 		return 0
