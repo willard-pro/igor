@@ -91,7 +91,7 @@ function page_prompts() {
                     break
                 elif [[ $prompt_command =~ \$\{configure:([^}]*)\} ]]; then
                     local configure_comand="${BASH_REMATCH[1]}"
-                    configure_module $configure_comand $module_name $prompt_option "$prompt_result"
+                    configure_module $configure_comand $module_name $prompt_name "$prompt_result"
                 else
                     log DEBUG "Specific command defined in prompt $prompt_name options, overrides the default command"
                     local page_command=$prompt_command
@@ -118,7 +118,7 @@ function page_prompts() {
         elif [[ $page_command =~ \$\{configure:([^}]*)\} ]]; then
             local configure_comand="${BASH_REMATCH[1]}"
             
-            configure_module $configure_comand $module_name $prompt_option
+            configure_module $configure_comand $module_name $prompt_name
         else
             local command_arguments=$(get_values "$page_command")
             local command_only="${page_command%% *}"

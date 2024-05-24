@@ -179,3 +179,4 @@ echo ${modules["$option"]}
     fi
 done
 
+log_phrase
