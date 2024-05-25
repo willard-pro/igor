@@ -43,7 +43,8 @@ function get_arguments() {
             result_array+=("$argument")
         fi
     done    
-        
+    result_array=("${result_array[@]:1}")
+
     echo "${result_array[@]}"
 }
 
