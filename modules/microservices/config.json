@@ -1,41 +1,50 @@
 {
   "module": {
-    "name": "components",
-    "label": "Components",
+    "name": "microservices",
+    "label": "MicroServices",
     "type": "bash",
     "configurable": "true"
   },
   "pages": [
     {
       "name": "main",
-      "label": "Component Administration",
-      "command": "${page:components}",
+      "label": "Microservice Administration",
+      "command": "${page:microservices}",
       "prompts": [
         {
           "label": "Select action to take",
           "name": "component_action",
           "options": [
             {
-              "name": "Start Component(s)",
+              "name": "Start Microservice(s)",
               "value": "start"
             },
             {
-              "name": "Stop Component(s)",
+              "name": "Stop Microservice(s)",
               "value": "stop"
+            },
+            {
+              "name": "Update Microservice(s)",
+              "value": "update"
+            },
+            {
+              "name": "Package Microservice(s)",
+              "value": "package",
+              "condition": "${environment:local}"
             }
           ]
         }
       ]
     },
     {
-      "name": "components",
-      "label": "Components",
+      "name": "microservices",
+      "label": "MicroServices",
       "command": "abc ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
       "prompts": [
         {
           "label": "Select component to ${value:page.main.prompt.component_action}",
           "name": "get_component",
-          "options": "${command:get_components}"
+          "options": "${command:get_microservices}"
         },
         {
           "label": "Are you sure you want to ${value:page.main.prompt.component_action} component ${value:prompt.get_component}",
@@ -46,7 +55,7 @@
     },
     {
       "name": "configure",
-      "label": "Component Administration Configuration",
+      "label": "Microservice Administration Configuration",
       "command": "${configure:done}",
       "prompts": [
         {

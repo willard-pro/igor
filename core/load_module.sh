@@ -1,4 +1,5 @@
-load_module() {
+
+function load_module() {
 	local module_name=$1
 	local module_config="$modules_dir/$module_name/config.json"
 	
@@ -6,5 +7,11 @@ load_module() {
 	check_prerequisists
 	log DEBUG "Loaded module ${BOLD}$module_name${RESET}"
 
-	page $module_name main
+	local is_configured=$(is_module_configured "$module_name")
+
+	if [[ $is_configured == "true" ]]; then
+		page $module_name main
+	else
+		page $module_name "configure"
+	fi
 }

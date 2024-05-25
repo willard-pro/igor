@@ -1,52 +1,76 @@
 {
   "module": {
-    "name": "Modules",
-    "type": "bash"
+    "name": "module_admin",
+    "label": "Modules",
+    "type": "bash",
+    "configurable": "true"
   },
   "pages": [
     {
       "name": "main",
       "label": "Module Administration",
-      "command": "${page:modules}",
       "prompts": [
         {
           "label": "Select action to take",
           "name": "module_action",
           "options": [
             {
-              "name": "Configure",
-              "value": "configure",
-              "condition": "!${command:is_configured}",
-              "command": "${page:configure}"
-            },
-            {
               "name": "Install Module",
               "value": "install",
-              "condition": "${command:is_configured}"
+              "command": "${page:install_module}"
             },
             {
               "name": "Remove Module",
               "value": "remove",
-              "condition": "${command:is_configured}"
+              "command": "${page:remove_module}"
             }
           ]
         }
       ]
     },
     {
-      "name": "modules",
-      "label": "Modules",
-      "command": "abc ${value:page.main.prompt.module_action}  ${value:prompt.get_module}",
+      "name": "install_module",
+      "label": "Install New Module(s)",
       "prompts": [
         {
-          "label": "Select module to ${value:page.main.prompt.module_action}",
-          "name": "get_module",
-          "options": "${command:get_installed_modules}"
-        },
+          "label": "What package format will the module(s) be provided",
+          "name": "module_package_format",
+          "options": [
+            {
+              "name": "Directory",
+              "value": "dir",
+              "command": "${page:install_module_dir}"
+            },
+            {
+              "name": "Zip Archive",
+              "value": "zip",
+              "command": "${page:install_module_zip}"
+            }            
+          ]
+        }
+      ]
+    },
+    {
+      "name": "install_module_dir",
+      "label": "Source Directory",
+      "command": "install_module dir ${value:prompt.module_package_source}",
+      "prompts": [
         {
-          "label": "Are you sure you want to ${value:page.main.prompt.module_action} module ${value:prompt.get_module}",
-          "name": "confirm_module_action",
-          "format": "yn"
+          "label": "Provide the path to the module(s) source",
+          "name": "module_package_source",
+          "format": "dir"
+        }
+      ]
+    },
+    {
+      "name": "install_module_zip",
+      "label": "Source Archive",
+      "command": "install_module zip ${value:prompt.module_package_source} ",
+      "prompts": [
+        {
+          "label": "Provide the path to the module(s) source",
+          "name": "module_package_source",
+          "format": "zip"
         }
       ]
     },

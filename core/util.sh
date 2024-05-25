@@ -22,26 +22,28 @@ function replace_values() {
     echo "$output_string"
 }
 
-function get_values() {
-    local input_string="$1"
+function get_arguments() {
+    local argument_string="$1"
 
+    local argument
     local -a result_array=()
-    local pattern='\$\{value:([^}]+)\}'
 
-    while [[ $input_string =~ $pattern ]]; do
-        local match="${BASH_REMATCH[0]}"
+    local arguments=($argument_string)
+    for argument in "${arguments[@]}"
+    do
+        if [[ $argument =~ \$\{value:([^}]+)\} ]]; then
+            local key="${BASH_REMATCH[1]}"
         
-        local key="${BASH_REMATCH[1]}"
-        if [[ ! $key == page.* ]]; then
-            key="page.$page_name.$key"
+            if [[ ! $key == page.* ]]; then
+                key="page.$page_name.$key"
+            fi
+        
+            result_array+=("${page_prompt_results[$key]}")
+        else
+            result_array+=("$argument")
         fi
-
-        local replacement="${page_prompt_results[$key]}"
-        input_string="${input_string//$match/$replacement}"
-
-        result_array+=("$replacement")
-    done
-
+    done    
+        
     echo "${result_array[@]}"
 }
 

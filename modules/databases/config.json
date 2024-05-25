@@ -1,41 +1,53 @@
 {
   "module": {
-    "name": "components",
-    "label": "Components",
+    "name": "databases",
+    "label": "Databases",
     "type": "bash",
     "configurable": "true"
   },
   "pages": [
     {
       "name": "main",
-      "label": "Component Administration",
-      "command": "${page:components}",
+      "label": "Database Administration",
+      "command": "${page:databases}",
       "prompts": [
         {
           "label": "Select action to take",
           "name": "component_action",
           "options": [
             {
-              "name": "Start Component(s)",
+              "name": "Start Database(s)",
               "value": "start"
             },
             {
-              "name": "Stop Component(s)",
+              "name": "Stop Database(s)",
               "value": "stop"
+            },
+            {
+              "name": "Update Databases(s)",
+              "value": "update"
+            },
+            {
+              "name": "Backup Database(s)",
+              "value": "backup"
+            }
+            {
+              "name": "Restore Database(s)",
+              "value": "restore"
             }
           ]
         }
       ]
     },
     {
-      "name": "components",
-      "label": "Components",
+      "name": "databases",
+      "label": "Databases",
       "command": "abc ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
       "prompts": [
         {
           "label": "Select component to ${value:page.main.prompt.component_action}",
           "name": "get_component",
-          "options": "${command:get_components}"
+          "options": "${command:get_microservices}"
         },
         {
           "label": "Are you sure you want to ${value:page.main.prompt.component_action} component ${value:prompt.get_component}",
@@ -46,7 +58,7 @@
     },
     {
       "name": "configure",
-      "label": "Component Administration Configuration",
+      "label": "Microservice Administration Configuration",
       "command": "${configure:done}",
       "prompts": [
         {

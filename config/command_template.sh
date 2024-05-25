@@ -3,8 +3,6 @@
 debug=$debug
 development=$development
 
-env_file=$env_file
-
 source core/log.sh
 source core/store.sh
 source core/colors.sh

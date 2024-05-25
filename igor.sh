@@ -129,13 +129,13 @@ for module_dir in $modules_dir/*/; do
 		if [ $? -ne 0 ]; then
         	log ERROR "Unable to parse ${BOLD}${module_dir}config.json${RESET}"
         else
-	        module_name=$(jq -r '.module.name' "${module_dir}config.json")
+	        module_label=$(jq -r '.module.label' "${module_dir}config.json")
 	        module_only_dir="${module_dir#*modules/}"
 	        module_only_dir="${module_only_dir::-1}"
 
 	        # Store module directory and module name in the associative array
-	        modules["$module_name"]="$module_only_dir"
-	        options+=("$module_name")
+	        modules["$module_label"]="$module_only_dir"
+	        options+=("$module_label")
 	    fi
     fi
 done

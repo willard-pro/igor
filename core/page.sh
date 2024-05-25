@@ -120,7 +120,7 @@ function page_prompts() {
             
             configure_module $configure_comand $module_name $prompt_name
         else
-            local command_arguments=$(get_values "$page_command")
+            local command_arguments=$(get_arguments "$page_command")
             local command_only="${page_command%% *}"
             
             run_command "$module_name" "$command_only" ${command_arguments[@]}
