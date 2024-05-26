@@ -1,5 +1,8 @@
 
 tmp_dir="tmp"
+config_dir="config"
+
+env_file="$config_dir/env.json"
 
 function configure_env() {
 	local env_name=$1
