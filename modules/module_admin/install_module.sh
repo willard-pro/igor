@@ -59,8 +59,6 @@ function install_module_from_dir() {
 		    is_configurable="true"
 		fi
 
-		log TRACE "configred = $is_configurable"
-
 		local new_module=$(jq -n --arg name "$module_name" --arg configured "$is_configurable" '{ "name": $name, "configured": $configured }')
 		jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 

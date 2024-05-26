@@ -29,6 +29,23 @@
       ]
     },
     {
+      "name": "remove_module",
+      "label": "Remove Module",
+      "command": "delete_module ${value:prompt.selected_module_remove}",
+      "prompts": [
+        {
+          "label": "Select module to remove",
+          "name": "selected_module_remove",
+          "options": "${command:get_installed_modules}"
+        },
+        {
+          "label": "Are you sure you want to remove module",
+          "name": "confirm_module_remove",
+          "format": "continue"
+        }
+      ]
+    },    
+    {
       "name": "install_module",
       "label": "Install New Module(s)",
       "prompts": [

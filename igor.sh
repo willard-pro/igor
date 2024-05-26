@@ -130,8 +130,7 @@ for module_dir in $modules_dir/*/; do
         	log ERROR "Unable to parse ${BOLD}${module_dir}config.json${RESET}"
         else
 	        module_label=$(jq -r '.module.label' "${module_dir}config.json")
-	        module_name="${module_dir#*modules/}"
-	        module_name="${module_name::-1}"
+	        module_name=$(jq -r '.module.name' "${module_dir}config.json")
 
 		    is_module_present=$(jq --arg name "$module_name" '[.modules[] | select(.name == $name)] | length > 0' $env_file)
 		    if [ "$is_module_present" = "true" ]; then

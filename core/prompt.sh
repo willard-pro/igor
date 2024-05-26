@@ -16,7 +16,7 @@ function page_prompt_user_options() {
         if [[ $prompt_options_all =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
             
-            local command_arguments=$(get_values "$command")
+            local command_arguments=$(get_arguments "$command")
             local command_only="${command%% *}"
 
             run_command "$module_name" "$command_only" ${command_arguments[@]}
@@ -39,7 +39,7 @@ function page_prompt_user_options() {
             if [[ $prompt_option_condition =~ \$\{command:([^}]*)\} ]]; then
                 local command="${BASH_REMATCH[1]}"
                 
-                local command_arguments=$(get_values "$command")
+                local command_arguments=$(get_arguments "$command")
                 local command_only="${command%% *}"
 
                 run_command "$module_name" "$command_only" ${command_arguments[@]}
