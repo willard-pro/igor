@@ -31,7 +31,7 @@
     {
       "name": "remove_module",
       "label": "Remove Module",
-      "command": "delete_module ${value:prompt.selected_module_remove}",
+      "command": "delete_installed_module ${value:prompt.selected_module_remove}",
       "prompts": [
         {
           "label": "Select module to remove",

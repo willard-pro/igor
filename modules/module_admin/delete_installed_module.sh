@@ -5,7 +5,7 @@ modules_dir="modules"
 
 env_file="$config_dir/env.json"
 
-function delete_instaled_module() {
+function delete_installed_module() {
 	local module_name="$1"
 	local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 
