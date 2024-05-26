@@ -36,12 +36,13 @@ function run_command() {
 
     cp "$config_dir/command_template.sh" "$command_tmp"
 
+    sed -i "s/\$tmp_dir/$tmp_dir/g" $command_tmp
     sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s/\$development/$development/g" $command_tmp
     sed -i "s|\$env_file|$env_file|g" $command_tmp
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp
-	sed -i "s/\$arguments/$arguments/g" $command_tmp
+	sed -i "s|\$arguments|$arguments|g" $command_tmp
 	
 	env -i /bin/bash -c "export debug=$debug && export file_store=$file_store && /bin/bash $command_tmp $arguments"
 	local command_exit_value=$?

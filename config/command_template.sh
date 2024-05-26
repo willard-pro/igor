@@ -3,6 +3,8 @@
 debug=$debug
 development=$development
 
+tmp_dir=$tmp_dir
+
 source core/log.sh
 source core/store.sh
 source core/colors.sh

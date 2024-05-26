@@ -30,7 +30,7 @@
             {
               "name": "Backup Database(s)",
               "value": "backup"
-            }
+            },
             {
               "name": "Restore Database(s)",
               "value": "restore"
