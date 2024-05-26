@@ -117,6 +117,27 @@ fi
 options=()
 declare -A modules
 
+
+if [ ! -f $env_file ]; then
+	is_env_configred="false"
+	echo '{}' > "$env_file"
+
+	jq --arg name "unknown" '. + { "environment": $name }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+
+	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
+	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+else
+	if jq -e '.environment == "unknown"' "$env_file" > /dev/null; then
+		is_env_configred="false"
+	else
+		is_env_configred="true"
+	fi
+fi
+
+if [[ $is_env_configred == "false" ]]; then
+	log IGOR "This environment is unknown, complete the ${BOLD}Module Administration Confguration${RESET}"
+fi
+
 # Loop over all directories within the "modules" directory
 for module_dir in $modules_dir/*/; do
 	log DEBUG "Scanning $module_dir"
@@ -132,12 +153,19 @@ for module_dir in $modules_dir/*/; do
 	        module_label=$(jq -r '.module.label' "${module_dir}config.json")
 	        module_name=$(jq -r '.module.name' "${module_dir}config.json")
 
-		    is_module_present=$(jq --arg name "$module_name" '[.modules[] | select(.name == $name)] | length > 0' $env_file)
-		    if [ "$is_module_present" = "true" ]; then
-		        # Store module directory and module name in the associative array
+
+	        if [[ $is_env_configred == "true" ]]; then
+			    is_module_present=$(jq --arg name "$module_name" '[.modules[] | select(.name == $name)] | length > 0' $env_file)
+
+			    if [ "$is_module_present" = "true" ]; then
+			        # Store module directory and module name in the associative array
+			        modules["$module_label"]="$module_name"
+			        options+=("$module_label")
+			    fi
+		   	elif [[ "$module_name" == "module_admin" ]]; then
 		        modules["$module_label"]="$module_name"
 		        options+=("$module_label")
-		    fi
+		   	fi
 	    fi
     fi
 done
