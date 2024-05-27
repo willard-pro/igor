@@ -8,11 +8,11 @@ function load_module() {
 	log DEBUG "Loaded module ${BOLD}$module_name${RESET}"
 
 	local is_configured=$(is_module_configured "$module_name")
-
-	if [[ $is_configured == "true" ]]; then
+	if [[ "$is_configured" == "true" ]]; then
 		page $module_name main
 	else
 		log IGOR "Module ${BOLD}$module_label${RESET} requires your attention, please configure..."
 		page $module_name "configure"
+		set_configurtion_property "$module_name" "configured" "true"
 	fi
 }

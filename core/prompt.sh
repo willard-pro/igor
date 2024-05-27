@@ -95,11 +95,17 @@ function page_prompt_user_question() {
         "continue")
             page_prompt_user_continue "$prompt_label"
             ;;
+        "exit")
+            page_prompt_user_exit "$prompt_label"
+            ;;            
         "string")
             page_prompt_user_text "$prompt_label"
             ;;
         "dir")
             page_prompt_user_directory "$prompt_label"
+            ;;
+        "file")
+            page_prompt_user_file "$prompt_label"
             ;;
         *)
             log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
@@ -142,6 +148,15 @@ function page_prompt_user_continue() {
     fi    
 }
 
+function page_prompt_user_exit() {
+    local prompt_label=$1
+    
+    echo "$prompt_label"
+    read -n 1 -s
+    log_phrase
+    exit 0
+}
+
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
@@ -150,8 +165,13 @@ function page_prompt_user_text() {
 
     while true; do
         read -r -p "$prompt_label: " response
-        prompt_result=$response
-        break
+        
+        validate_page_prompt
+
+        if [ $? -eq 0 ]; then
+            prompt_result=$response
+            break
+        fi
     done
 }
 
@@ -189,6 +209,54 @@ function page_prompt_user_directory() {
     done
 }
 
+
+function page_prompt_user_file() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if is_file "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter a valid file path."
+        fi                
+    done
+}
+
+
+function validate_page_prompt() {    
+    local has_validation=$(echo "$prompt" | jq 'has("validate")')
+
+    if [[ $has_validation == "true" ]]; then
+        local validate_command=$(echo "$prompt" | jq -r '.validate.command')
+        local validate_message=$(echo "$prompt" | jq -r '.validate.message')
+
+        # log DEBUG "Validate $prompt_validate on prompt $prompt_option"
+
+        local not_command=0
+        if [[ $validate_command == \!* ]]; then
+            not_command=1
+            validate_command="${validate_command:1}"
+        fi
+
+        local command_arguments=$(get_arguments "$validate_command")
+        local command_only="${validate_command%% *}"
+
+        run_command "$module_name" "$command_only" ${command_arguments[@]}
+        local command_validate_exit_value=$?
+
+        local command_validate_result=$(( not_command ^ command_validate_exit_value))
+
+        if [  $command_validate_result -ne 0 ]; then
+            log IGOR "$validate_message"
+        fi
+    fi
+
+    return 0
+}
+
 # Function to check if input is an integer
 is_number() {
     local value=$1
@@ -219,6 +287,17 @@ is_dir() {
     local value=$1
 
     if [ -d "$value"  ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to check if input is valid file
+is_file() {
+    local value=$1
+
+    if [ -f "$value"  ]; then
         return 0
     else
         return 1

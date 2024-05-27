@@ -1,0 +1,55 @@
+{
+  "module": {
+    "name": "$name",
+    "label": "$label",
+    "type": "bash",
+    "configurable": "false"
+  },
+  "pages": [
+    {
+      "name": "main",
+      "label": "$label",
+      "prompts": [
+        {
+          "label": "Select action to take",
+          "name": "module_action",
+          "options": [
+            {
+              "name": "What's Next",
+              "value": "install",
+              "command": "${page:next}"
+            },
+            {
+              "name": "Configure (Optional)",
+              "value": "configure",
+              "command": "${page:configure}"
+            }
+          ]          
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "label": "$label Next",
+      "prompts": [
+        {
+          "label": "Welcome to your new module. Refer to some documentation for more details... Press any key to exit",
+          "name": "any_key_exit",
+          "format": "exit"
+        }
+      ]
+    },
+    {
+      "name": "configure",
+      "label": "$label Configuration (Optional)",
+      "command": "configure_env ${value:prompt.config_path}",
+      "prompts": [
+        {
+          "label": "Please provide path to configuration file",
+          "name": "config_path",
+          "format": "file"
+        }
+      ]
+    }
+  ]
+}

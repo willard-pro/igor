@@ -23,6 +23,16 @@
               "name": "Remove Module",
               "value": "remove",
               "command": "${page:remove_module}"
+            },
+            {
+              "name": "Create Module",
+              "value": "create",
+              "command": "${page:create_module}"
+            },
+            {
+              "name": "Export Module",
+              "value": "export",
+              "command": "${page:export_module}"
             }
           ]
         }
@@ -67,6 +77,48 @@
         }
       ]
     },
+    {
+      "name": "create_module",
+      "label": "Create New Module",
+      "command": "create_module ${value:prompt.module_name} ${value:prompt.module_label}",
+      "prompts": [
+        {
+          "label": "What will the display name be of the new module",
+          "name": "module_label",
+          "format": "string",
+          "validate": {
+              "command": "!has_module label ${value:prompt.module_name}",
+              "message": "A module with label ${value:prompt.module_name} already exists"
+            }          
+        },
+        {
+          "label": "What will the reference name of the new module be",
+          "name": "module_name",
+          "format": "string",
+          "validate": {
+              "command": "!has_module name ${value:prompt.module_name}",
+              "message": "A module with reference name ${value:prompt.module_name} already exists"
+            }
+        }        
+      ]
+    },
+    {
+      "name": "export_module",
+      "label": "Export Module",
+      "command": "export_module ${value:prompt.selected_module_export}",
+      "prompts": [
+        {
+          "label": "Select module to export",
+          "name": "selected_module_export",
+          "options": "${command:get_installed_modules}"
+        },
+        {
+          "label": "Are you sure you want to export module",
+          "name": "confirm_module_export",
+          "format": "continue"
+        }
+      ]
+    },        
     {
       "name": "install_module_dir",
       "label": "Source Directory",

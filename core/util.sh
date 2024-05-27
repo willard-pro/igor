@@ -147,7 +147,7 @@ function has_configuration_property() {
     local module_name="$1"
     local property_name="$2"
 
-    local result=$(jq --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configured' "$env_file")
+    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configured' "$env_file")
     echo "$result"
 }
 
