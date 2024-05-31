@@ -1,0 +1,24 @@
+{
+	"databases": [
+		{
+			"label": "BOM",
+			"name": "bom",
+			"username": "root",
+			"pasword": "password",
+			"container": "mysql_cnb-local-mariadb_1",
+			"dir": "/home/lord/workbench/credit-network.biz/git/docker/local/sql",
+			"restore": [
+				{
+					"source": "dropbox",
+					"dir": "/database/backup/prod",
+					"access-token": "sdfdsfsdosdf9s0d8f90sdf809232092r098s90d8f09s",
+					"masks": [
+						{
+							"sql": "update jhi_user set password_hash = '$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC'"
+						}
+					]
+				}
+			]
+		}
+	]
+}

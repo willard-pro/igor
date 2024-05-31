@@ -92,6 +92,9 @@ function page_prompt_user_question() {
         "yn")
             page_prompt_user_yn "$prompt_label"
             ;;
+        "Yn")
+            page_prompt_user_Yn "$prompt_label"
+            ;;
         "continue")
             page_prompt_user_continue "$prompt_label"
             ;;
@@ -125,14 +128,40 @@ function page_prompt_user_yn() {
     while true; do
         read -r -p "$prompt_label: " response
 
+        if [ -z "$response" ]; then
+            response="n"
+        fi
+
         if is_yn "$response"; then
-            prompt_result=$response
+            prompt_result="${response,,}"
             break
         else
             log ERROR "Invalid input. Please enter either y for yes or n for no."
         fi                
     done
 }
+
+function page_prompt_user_Yn() {
+    local prompt_label=$1
+
+    prompt_label="${prompt_label} [Y/n]"
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if [ -z "$response" ]; then
+            response="y"
+        fi
+
+        if is_yn "$response"; then
+            prompt_result="${response,,}"
+            break
+        else
+            log ERROR "Invalid input. Please enter either y for yes or n for no."
+        fi                
+    done
+}
+
 
 # ####
 # Function will place selected response in variable prompt_result  
@@ -252,6 +281,59 @@ function validate_page_prompt() {
         if [  $command_validate_result -ne 0 ]; then
             log IGOR "$validate_message"
         fi
+    fi
+
+    return 0
+}
+
+function condition_page_prompt() {
+    local condition="$1"
+
+    if [[ $condition =~ \$\{command:([^}]*)\} ]]; then
+        local command="${BASH_REMATCH[1]}"
+        
+        local command_arguments=$(get_arguments "$command")
+        local command_only="${command%% *}"
+
+        run_command "$module_name" "$command_only" ${command_arguments[@]}
+        local command_condition_exit_value=$?
+
+        local not_command=0
+        if [[ $prompt_option_condition == \!* ]]; then
+            not_command=1
+        fi
+
+        local command_condition_result=$(( not_command ^ command_condition_exit_value))
+
+        if [  $command_condition_result -eq 0 ]; then
+            prompt_options_array+=("$prompt_option")
+        else
+            log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
+        fi
+    else
+        local expr=$(replace_values "$condition")
+        local regex='^(.+?)\s*(==|!=|<=|>=|<|>)\s*(.+)$'
+          
+        if [[ $expr =~ $regex ]]; then
+            local left_operand="${BASH_REMATCH[1]}"
+            local operator="${BASH_REMATCH[2]}"
+            local right_operand="${BASH_REMATCH[3]}"
+        else
+            log ERROR "Condition $condition does not adhere to conditional syntax"
+            exit 1
+        fi
+
+        # Check operand types
+        if [[ $left_operand =~ ^[0-9]+$ && ! $right_operand =~ ^[0-9]+$ ]]; then
+          log ERROR "$left_operand is a number but $right_operand is not."
+          exit 1
+        elif [[ ! $left_operand =~ ^[0-9]+$ && $right_operand =~ ^[0-9]+$ ]]; then
+          echo "Error: $right_operand is a number but $left_operand is not."
+          exit 1
+        fi
+
+        local eval_result=$(eval "if [[ $expr ]]; then echo 0; else echo 1; fi")
+        return $eval_result
     fi
 
     return 0

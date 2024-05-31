@@ -65,6 +65,16 @@ function page_prompts() {
 
             local prompt_name=$(echo "$prompt" | jq -r '.name')
 
+            local has_condition=$(echo "$prompt" | jq 'has("condition")')
+            if [[ $has_condition == "true" ]]; then
+                local prompt_condition=$(echo "$prompt" | jq -r '.condition')
+                condition_page_prompt "$prompt_condition"
+
+                if [[ $?  -ne 0 ]]; then
+                    continue
+                fi
+            fi
+
             local has_options=$(echo "$prompt" | jq 'has("options")')
             if [[ $has_options == "true" ]]; then
                 page_prompt_user_options
@@ -74,6 +84,7 @@ function page_prompts() {
                     local prompt_command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
                 fi
             fi 
+
 
             local has_format=$(echo "$prompt" | jq 'has("format")')
             if [[ $has_format == "true" ]]; then

@@ -4,6 +4,7 @@ debug=$debug
 development=$development
 
 tmp_dir=$tmp_dir
+env_file=$env_file
 file_store=$file_store
 
 source core/log.sh
