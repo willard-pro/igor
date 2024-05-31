@@ -1,11 +1,14 @@
 {
 	"databases": [
 		{
-			"label": "BOM",
-			"name": "bom",
+			"label": "All In One",
+			"name": "local",
 			"username": "root",
 			"pasword": "password",
-			"container": "mysql_cnb-local-mariadb_1",
+			"docker": {
+				"container-name": "mysql_cnb-local-mariadb_1",
+				"path": "/home/lord/workbench/credit-network.biz/git/docker/local/mysql"
+			},
 			"dir": "/home/lord/workbench/credit-network.biz/git/docker/local/sql",
 			"restore": [
 				{

@@ -29,7 +29,7 @@ function run_command() {
         command_tmp=$(mktemp -p "$command_dir/$module_name" "${command}_XXXX")
         session_commands["$module_name.$command"]="$command_tmp"
 
-        log DEBUG "Created tempory command script ${BOLD}$command_tmp${RESET} for command ${BOLD}$command${RESET} in module ${BOLD}.$module_name${RESET}"
+        log DEBUG "Created tempory command script ${BOLD}$command_tmp${RESET} for command ${BOLD}$command${RESET} in module ${BOLD}$module_name${RESET}"
     fi
 
     log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wraped in ${BOLD}$command_tmp${RESET}"

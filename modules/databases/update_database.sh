@@ -7,7 +7,7 @@ mysql_command="local"
 
 source ./modules/databases/execute_mysql_command.sh
 
-function execute_sql_files() {
+function update_database() {
   database_name="$1"
   local dryRun="$2"
   local sql_directory="$3"

@@ -42,12 +42,12 @@
             {
               "name": "Start",
               "value": "start",
-              "command": "start_database ${value:page.main.database_selected}"
+              "command": "start_database ${value:page.main.prompt.database_selected}"
             },
             {
               "name": "Stop",
               "value": "stop",
-              "command": "stop_database ${value:page.main.database_selected}"
+              "command": "stop_database ${value:page.main.prompt.database_selected}"
             },
             {
               "name": "Update",
@@ -57,7 +57,7 @@
             {
               "name": "Backup",
               "value": "backup",
-              "command": "backup_database ${value:page.main.database_selected}"
+              "command": "backup_database ${value:page.main.prompt.database_selected}"
             },
             {
               "name": "Restore",
