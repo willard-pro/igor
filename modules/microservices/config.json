@@ -52,13 +52,14 @@
             {
               "name": "Update",
               "value": "update",
-              "command": "${page:update}"
+              "command": "update_microservice ${value:page.main.prompt.microservice_selected}"
             },
             {
-              "name": "Package Microservice(s)",
+              "name": "Package",
               "value": "package",
+              "command": "package_microservice ${value:page.main.prompt.microservice_selected}",
               "condition": "${environment:local}"
-            }            
+            }
           ]
         }
       ]

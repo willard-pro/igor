@@ -89,9 +89,18 @@ Page consist of a label and list of prompts.
 # Modules
 
 ## Module Administration
-### Instal
+
+### Create
+
+
+
+### Install
 ### Remove
 
 
+# FAQ
+
+1. How do I create a new module?
+N
 
 
