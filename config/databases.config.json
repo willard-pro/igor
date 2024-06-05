@@ -1,15 +1,15 @@
 {
 	"databases": [
 		{
-			"label": "All In One",
+			"label": "Local",
 			"name": "local",
 			"username": "root",
 			"pasword": "password",
 			"docker": {
-				"container-name": "mysql_cnb-local-mariadb_1",
+				"container": "mysql_cnb-local-mariadb_1",
 				"path": "/home/lord/workbench/credit-network.biz/git/docker/local/mysql"
 			},
-			"dir": "/home/lord/workbench/credit-network.biz/git/docker/local/sql",
+			"dir": "/home/lord/workbench/credit-network.biz/git/docker/local/backup",
 			"restore": [
 				{
 					"source": "dropbox",

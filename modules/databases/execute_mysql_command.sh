@@ -38,6 +38,9 @@ function execute_mysql_docker() {
 		"file")
 			cat $sql_file | docker exec -i "$container_name" /usr/bin/mysql -u "$user_name" --password="$user_password" "$database_name"
 			;;
+		"backup")
+			docker exec -i "$container_name" /usr/bin/mysqldump -u "$user_name" --password="$user_password" "$database_name" > "$sql_file"
+			;;
 	esac
 
 	return $?
@@ -68,6 +71,9 @@ function execute_mysql_local() {
 		"file")
 			cat $sql_file | mysql -u "$user_name" --password="$user_password" "$database_name"
 			;;			
+		"backup")
+			mysqldump -u "$user_name" --password="$user_password" "$database_name" > "$sql_file"
+			;;
 	esac
 
 	return $?
