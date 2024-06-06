@@ -1,4 +1,10 @@
 
+
+function get_environment() {
+    local result=$(jq -r '.environment' "$env_file")
+    echo "$result"
+}
+
 function replace_values() {
     local input_string="$1"
 

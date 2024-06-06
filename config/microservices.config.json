@@ -1,0 +1,16 @@
+{
+	"microservices": [
+		{
+			"label": "Gateway",
+			"name": "gateway",
+			"path": "/home/lord/workbench/credit-network.biz/git/docker/microservices/gateway",
+			"workspace": "/home/lord/workbench/credit-network.biz/git/microservices/gateway"
+		},
+		{
+			"label": "Bridge Endpoint",
+			"name": "bridge-endpoint",
+			"path": "/home/lord/workbench/credit-network.biz/git/docker/microservices/bridge-endpoint",
+			"workspace": "/home/lord/workbench/credit-network.biz/git/microservices/bridge-endpoint"
+		}
+	]
+}

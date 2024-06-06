@@ -32,33 +32,12 @@ function page_prompt_user_options() {
         local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | has("condition")')
 
         if [[ $has_condition == "true" ]]; then
-            local prompt_option_condition=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
+            local prompt_condition=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
+            local prompt_condition_result=$(condition_page_prompt "$prompt_condition")
 
-            log DEBUG "Evaluating condition $prompt_option_condition on prompt $prompt_option"
-
-            if [[ $prompt_option_condition =~ \$\{command:([^}]*)\} ]]; then
-                local command="${BASH_REMATCH[1]}"
-                
-                local command_arguments=$(get_arguments "$command")
-                local command_only="${command%% *}"
-
-                run_command "$module_name" "$command_only" ${command_arguments[@]}
-                local command_condition_exit_value=$?
-
-                local not_command=0
-                if [[ $prompt_option_condition == \!* ]]; then
-                    not_command=1
-                fi
-
-                local command_condition_result=$(( not_command ^ command_condition_exit_value))
-
-                if [  $command_condition_result -eq 0 ]; then
-                    prompt_options_array+=("$prompt_option")
-                else
-                    log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
-                fi
-
-            fi        
+            if [[ $prompt_condition_result -eq 0 ]]; then
+                prompt_options_array+=("$prompt_option")
+            fi    
         else
             prompt_options_array+=("$prompt_option")
         fi
@@ -82,6 +61,17 @@ function page_prompt_user_options() {
 function page_prompt_user_question() {
     local prompt_label=$(echo $prompt | jq -r '.label')
     local prompt_format=$(echo $prompt | jq -r '.format')
+
+    local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" 'has("condition")')
+
+    if [[ $has_condition == "true" ]]; then
+        local prompt_condition=$(echo "$prompt" | jq -r '.condition')
+        local prompt_condition_result=$(condition_page_prompt "$prompt_condition")
+        
+        if [[ $prompt_condition_result -ne 0 ]]; then
+            return 1
+        fi    
+    fi
 
     prompt_label=$(replace_values "$prompt_label")
 
@@ -305,10 +295,28 @@ function condition_page_prompt() {
 
         local command_condition_result=$(( not_command ^ command_condition_exit_value))
 
-        if [  $command_condition_result -eq 0 ]; then
-            prompt_options_array+=("$prompt_option")
-        else
-            log DEBUG "Skipping option ${BOLD}$option${RESET}, condition ${BOLD}$prompt_option_condition${RESET} not met"
+        if [  $command_condition_result -ne 0 ]; then
+            return 1
+        fi
+    elif [[ $condition =~ \$\{environment:([^}]*)\} ]]; then
+        local environment="${BASH_REMATCH[1]}"
+        
+        local not_environment=0
+        if [[ $prompt_option_condition == \!* ]]; then
+            not_environment=1
+        fi
+
+        local environment_condition_exit_value=1
+        local current_environment=$(get_environment)
+
+        if [[ "$environment" == "$current_environment" ]]; then
+            environment_condition_exit_value=0
+        fi
+
+        local environment_condition_result=$(( not_environment ^ environment_condition_exit_value))
+
+        if [  $environment_condition_result -ne 0 ]; then
+            return 1
         fi
     else
         local expr=$(replace_values "$condition")

@@ -52,7 +52,8 @@
             {
               "name": "Update",
               "value": "update",
-              "command": "update_microservice ${value:page.main.prompt.microservice_selected}"
+              "command": "update_microservice ${value:page.main.prompt.microservice_selected}",
+              "condition": "!${environment:local}"
             },
             {
               "name": "Package",
