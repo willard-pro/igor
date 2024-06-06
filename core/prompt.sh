@@ -33,9 +33,9 @@ function page_prompt_user_options() {
 
         if [[ $has_condition == "true" ]]; then
             local prompt_condition=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .condition')
-            local prompt_condition_result=$(condition_page_prompt "$prompt_condition")
 
-            if [[ $prompt_condition_result -eq 0 ]]; then
+            condition_page_prompt "$prompt_condition"
+            if [[ $? -eq 0 ]]; then
                 prompt_options_array+=("$prompt_option")
             fi    
         else
@@ -66,9 +66,9 @@ function page_prompt_user_question() {
 
     if [[ $has_condition == "true" ]]; then
         local prompt_condition=$(echo "$prompt" | jq -r '.condition')
-        local prompt_condition_result=$(condition_page_prompt "$prompt_condition")
-        
-        if [[ $prompt_condition_result -ne 0 ]]; then
+
+        condition_page_prompt "$prompt_condition"
+        if [[ $? -ne 0 ]]; then
             return 1
         fi    
     fi
@@ -289,7 +289,7 @@ function condition_page_prompt() {
         local command_condition_exit_value=$?
 
         local not_command=0
-        if [[ $prompt_option_condition == \!* ]]; then
+        if [[ $condition == \!* ]]; then
             not_command=1
         fi
 
@@ -300,14 +300,15 @@ function condition_page_prompt() {
         fi
     elif [[ $condition =~ \$\{environment:([^}]*)\} ]]; then
         local environment="${BASH_REMATCH[1]}"
-        
+
         local not_environment=0
-        if [[ $prompt_option_condition == \!* ]]; then
+        if [[ $condition == \!* ]]; then
             not_environment=1
         fi
 
         local environment_condition_exit_value=1
         local current_environment=$(get_environment)
+
 
         if [[ "$environment" == "$current_environment" ]]; then
             environment_condition_exit_value=0

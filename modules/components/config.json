@@ -5,42 +5,61 @@
     "type": "bash",
     "configurable": "true"
   },
+  "required": {
+    "commands": [
+      "docker"
+    ]
+  },  
   "pages": [
     {
       "name": "main",
       "label": "Component Administration",
-      "command": "${page:components}",
+      "command": "${page:component_action}",
       "prompts": [
         {
-          "label": "Select action to take",
-          "name": "component_action",
-          "options": [
-            {
-              "name": "Start Component(s)",
-              "value": "start"
-            },
-            {
-              "name": "Stop Component(s)",
-              "value": "stop"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "components",
-      "label": "Components",
-      "command": "abc ${value:page.main.prompt.component_action}  ${value:prompt.get_component}",
-      "prompts": [
-        {
-          "label": "Select component to ${value:page.main.prompt.component_action}",
-          "name": "get_component",
+          "label": "Select component",
+          "name": "component_selected",
           "options": "${command:get_components}"
         },
         {
-          "label": "Are you sure you want to ${value:page.main.prompt.component_action} component ${value:prompt.get_component}",
-          "name": "confirm_component_action",
-          "format": "yn"
+          "label": "Are you sure you want to select all components",
+          "name": "component_select_all",
+          "format": "continue",
+          "condition": "${value:prompt.component_selected} == 'all'"
+        }
+      ]
+    },    
+    {
+      "name": "component_action",
+      "label": "Component Action",
+      "prompts": [
+        {
+          "label": "Select action to take",
+          "name": "component_action_selected",
+          "options": [
+            {
+              "name": "Start",
+              "value": "start",
+              "command": "start_component ${value:page.main.prompt.component_selected}"
+            },
+            {
+              "name": "Stop",
+              "value": "stop",
+              "command": "stop_component ${value:page.main.prompt.component_selected}"
+            },
+            {
+              "name": "Update",
+              "value": "update",
+              "command": "update_component ${value:page.main.prompt.component_selected}",
+              "condition": "!${environment:local}"
+            },
+            {
+              "name": "Package",
+              "value": "package",
+              "command": "package_component ${value:page.main.prompt.component_selected}",
+              "condition": "${environment:local}"
+            }
+          ]
         }
       ]
     },
@@ -50,13 +69,12 @@
       "command": "${configure:done}",
       "prompts": [
         {
-          "label": "Provide the absolute path to directory containing the components",
-          "name": "base_dir",
-          "format": "dir",
+          "label": "Provide the file path to the components configuration",
+          "name": "config_file",
+          "format": "file",
           "command": "${configure:set}"
         }
       ]
     }
-
   ]
 }
