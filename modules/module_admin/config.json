@@ -80,7 +80,7 @@
     {
       "name": "create_module",
       "label": "Create New Module",
-      "command": "create_module ${value:prompt.module_name} ${value:prompt.module_label}",
+      "command": "create_module ${value:prompt.module_name} ${value:prompt.module_label} ${value:prompt.module_workspace}",
       "prompts": [
         {
           "label": "What will the display name be of the new module",
@@ -92,14 +92,19 @@
             }          
         },
         {
-          "label": "What will the reference name of the new module be",
+          "label": "What will the unique name of the new module be",
           "name": "module_name",
           "format": "string",
           "validate": {
               "command": "!has_module name ${value:prompt.module_name}",
-              "message": "A module with reference name ${value:prompt.module_name} already exists"
+              "message": "A module with name ${value:prompt.module_name} already exists"
             }
-        }        
+        },
+        {
+          "label": "Provide the path where the new module will created and developed",
+          "name": "module_workspace",
+          "format": "dir"
+        }
       ]
     },
     {

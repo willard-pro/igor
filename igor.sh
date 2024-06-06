@@ -138,37 +138,40 @@ if [[ $is_env_configred == "false" ]]; then
 	log IGOR "This environment is unknown, complete the ${BOLD}Module Administration Confguration${RESET}"
 fi
 
-# Loop over all directories within the "modules" directory
-for module_dir in $modules_dir/*/; do
-	log DEBUG "Scanning $module_dir"
+# Extract the names using jq
+module_names=$(jq -r '.modules[].name' $env_file)
 
-    # Check if config.json file exists in the current directory
-    if [ -f "${module_dir}config.json" ]; then
-        # Extract module name using jq
+# Iterate over the names
+for module_name in $module_names; do
+	log DEBUG "Scanning $module_name"
 
-        cat "${module_dir}config.json" | jq -e > /dev/null 2>&1
-		if [ $? -ne 0 ]; then
-        	log ERROR "Unable to parse ${BOLD}${module_dir}config.json${RESET}"
-        else
-	        module_label=$(jq -r '.module.label' "${module_dir}config.json")
-	        module_name=$(jq -r '.module.name' "${module_dir}config.json")
+    if [[ $is_env_configred == "true" ]]; then
+    	if [[ -d "$modules_dir/$module_name" ]]; then
+	    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 
+	    	if [ "$has_workspace" = "true" ]; then
+	    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	        if [[ $is_env_configred == "true" ]]; then
-			    is_module_present=$(jq --arg name "$module_name" '[.modules[] | select(.name == $name)] | length > 0' $env_file)
+	    		log DEBUG "Copy module from $module_workspace/$module_name"
 
-			    if [ "$is_module_present" = "true" ]; then
-			        # Store module directory and module name in the associative array
-			        modules["$module_label"]="$module_name"
-			        options+=("$module_label")
-			    fi
-		   	elif [[ "$module_name" == "module_admin" ]]; then
-		        modules["$module_label"]="$module_name"
-		        options+=("$module_label")
-		   	fi
+	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
+
+				module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    		module_label="$module_label (Experimental)"
+	    	else
+	    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    	fi
+
+	        # Store module directory and module name in the associative array
+	        modules["$module_label"]="$module_name"
+	        options+=("$module_label")
 	    fi
-    fi
+   	elif [[ "$module_name" == "module_admin" ]]; then
+        modules["$module_label"]="$module_name"
+        options+=("$module_label")
+   	fi
 done
+
 
 if [[ $development -eq 1 ]]; then
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"

@@ -11,12 +11,13 @@ function package_microservice() {
   	pushd "$microservice_workspace"
 
   	./mvnw -Pprod -DskipTests clean package verify jib:dockerBuild --offline
+  	
   	if [[ $? -eq  0 ]]; then
   		docker push "creditnetworkbiz/$microservice_name:latest"
   		log IGOR "Packaged microservice $microservice_name and pushed image to Docker under the tag ${BOLD}latest${RESET}"
   	else
   		log ERROR "Something went wrong during the local build and package"
   	fi
-  	
+
   	popd
 }
