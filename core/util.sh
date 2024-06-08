@@ -11,7 +11,7 @@ function replace_values() {
     local output_string="$input_string"
     local pattern='\$\{value:([^}]+)\}'
 
-    # Use a while loop to find and replace all occurrences of the pattern
+    # Use a while loop to find anarrayd replace all occurrences of the pattern
     while [[ $output_string =~ $pattern ]]; do
         # Extract the key
         key="${BASH_REMATCH[1]}"
@@ -190,4 +190,17 @@ function get_configuration_property() {
 
     local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .[$key]' "$env_file")
     echo "$result"
+}
+
+
+function print_array() {
+    local values=("$@")
+
+    if [ ${#values[@]} -eq 0 ]; then
+        log INFO "Array is empty"
+    else
+        for (( i=${#values[@]}-1; i>=0; i-- )); do
+            log INFO "${values[i]}"
+        done
+    fi
 }

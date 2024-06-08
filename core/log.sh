@@ -35,10 +35,3 @@ function log_phrase() {
     local random_phrase=$(shuf -n 1 "$config_dir/phrases.txt")
     log IGOR "$random_phrase"
 }
-
-print_array() {
-    # $1 is the array passed to the function
-    for item in "${@}"; do
-        echo "$item"
-    done
-}

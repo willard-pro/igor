@@ -1,4 +1,5 @@
 
+page_stack=()
 declare -A page_prompt_results=()
 
 function page() {
@@ -79,9 +80,14 @@ function page_prompts() {
             if [[ $has_options == "true" ]]; then
                 page_prompt_user_options
 
-                local has_command=$(echo "$prompt" | jq --arg value "$prompt_result" '.options[] | select(.value == $value) | has("command")')
-                if [[ $has_command == "true" ]]; then
-                    local prompt_command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
+                if [[ "$prompt_result" == "\${page:back}" ]]; then
+                    page_command="$prompt_result"
+                    break
+                else
+                    local has_command=$(echo "$prompt" | jq --arg value "$prompt_result" '.options[] | select(.value == $value) | has("command")')
+                    if [[ $has_command == "true" ]]; then
+                        local prompt_command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
+                    fi
                 fi
             fi 
 
@@ -96,6 +102,9 @@ function page_prompts() {
                 fi
             fi
 
+            log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
+            page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
+
             if [ -v prompt_command ]; then
                 if [[ $prompt_command =~ \$\{page:([^}]*)\} ]]; then
                     local page_command=$prompt_command
@@ -108,9 +117,6 @@ function page_prompts() {
                     local page_command=$prompt_command
                 fi
             fi
-
-            log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
-            page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
         done
 
         if [ -z "$page_command" ]; then
@@ -125,6 +131,18 @@ function page_prompts() {
 
         if [[ $page_command =~ \$\{page:([^}]*)\} ]]; then
             local command_page_name="${BASH_REMATCH[1]}"
+
+            if [[ "$command_page_name" == "back" ]]; then
+                command_page_name="${page_stack[-1]}"
+
+                page_pop
+                if [[ $? -eq 1 ]]; then
+                    return 
+                fi
+            else 
+                page_push "$page_name"
+            fi
+
             page $module_name $command_page_name
         elif [[ $page_command =~ \$\{configure:([^}]*)\} ]]; then
             local configure_comand="${BASH_REMATCH[1]}"
@@ -137,4 +155,20 @@ function page_prompts() {
             run_command "$module_name" "$command_only" ${command_arguments[@]}
         fi
     fi    
+}
+
+page_push() {
+    local page_name="$1"
+    page_stack+=("$page_name")
+}
+
+page_pop() {
+    if [ ${#page_stack[@]} -eq 0 ]; then
+        return 1
+    else
+        local popped_page="${page_stack[-1]}"
+        unset page_stack[-1]
+    fi
+
+    return 0
 }

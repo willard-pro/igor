@@ -146,26 +146,27 @@ for module_name in $module_names; do
 	log DEBUG "Scanning $module_name"
 
     if [[ $is_env_configred == "true" ]]; then
-    	if [[ -d "$modules_dir/$module_name" ]]; then
-	    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
+    	if [[ ! -d "$modules_dir/$module_name" ]]; then
+    		mkdir $modules_dir/$module_name
+    	fi
 
-	    	if [ "$has_workspace" = "true" ]; then
-	    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
+    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
+    	if [ "$has_workspace" = "true" ]; then
+    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
+    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
 
-	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
+    		cp $module_workspace/$module_name/* $modules_dir/$module_name
 
-				module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-	    		module_label="$module_label (Experimental)"
-	    	else
-	    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-	    	fi
+			module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+    		module_label="$module_label (Experimental)"
+    	else
+    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+    	fi
 
-	        # Store module directory and module name in the associative array
-	        modules["$module_label"]="$module_name"
-	        options+=("$module_label")
-	    fi
+        # Store module directory and module name in the associative array
+        modules["$module_label"]="$module_name"
+        options+=("$module_label")
    	elif [[ "$module_name" == "module_admin" ]]; then
         modules["$module_label"]="$module_name"
         options+=("$module_label")

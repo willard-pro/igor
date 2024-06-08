@@ -47,8 +47,10 @@ function page_prompt_user_options() {
 
     PS3="$prompt_label: "
     select prompt_option in "${prompt_options_array[@]}"; do
-        if [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
-
+        if [[ $REPLY -eq 0 ]]; then
+            prompt_result="\${page:back}"
+            break
+        elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
             local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
             prompt_result=$selected_prompt_option
             break
