@@ -3,6 +3,7 @@
 debug=0
 development=0
 
+lib_dir="lib"
 core_dir="core"
 config_dir="config"
 modules_dir="modules"
@@ -27,18 +28,31 @@ if [ ! -f "$file_store" ]; then
 	touch $file_store
 fi
 
-# Check if the directory exists
+if [ ! -d "$lib_dir" ]; then
+    echo "Error: Directory $lib_dir does not exist."
+    exit 1
+fi
+
 if [ ! -d "$core_dir" ]; then
     echo "Error: Directory $core_dir does not exist."
     exit 1
 fi
 
-# Import all scripts from the directory
+for lib_file in "$lib_dir"/*.sh; do
+    if [ -r "$lib_file" ]; then
+       	if ! bash -n "$lib_file"; then
+    		echo "Syntax errors found in $core_file."
+    		exit 1
+  		fi
+  		
+        source "$lib_file"
+    else
+        echo "Warning: Skipping non-readable or non-executable file: $core_file"
+    fi
+done
+
 for core_file in "$core_dir"/*.sh; do
-    # Check if the file is readable and executable
-    # && [ -x "$core_file" ]
     if [ -r "$core_file" ]; then
-       	# echo "Importing script: $core_file"
        	if ! bash -n "$core_file"; then
     		echo "Syntax errors found in $core_file."
     		exit 1
@@ -191,7 +205,7 @@ declare -A box_key_values
 box_key_values["Environment"]=$(jq -r --arg name "$igor_environment" '.environment[] | select(.name == $name) | .label' "$config_dir/default.json")
 box_key_values["Version"]=$(cat version.txt)
 
-banner "$config_dir/banner.txt" $igor_banner_color
+print_banner "$config_dir/banner.txt" $igor_banner_color
 print_box box_key_values 
 
 PS3="Select the desired module's functions to access: "
