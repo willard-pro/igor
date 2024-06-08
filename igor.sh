@@ -195,19 +195,16 @@ banner "$config_dir/banner.txt" $igor_banner_color
 print_box box_key_values 
 
 PS3="Select the desired module's functions to access: "
-options+=("Exit")
 
 select option in "${options[@]}"; do
-	if [[ " ${options[@]} " =~ " $option " ]]; then
-		if [[ $option == "Exit" ]]; then
-			log_phrase
-			exit 0
-		fi
 
-echo ${modules["$option"]}
+    if [[ "$REPLY" == "#" ]]; then
+    	log_phrase
+        exit 0
+	elif [[ " ${options[@]} " =~ " $option " ]]; then
+
 		selected_module_source=${modules["$option"]}
 		load_module $selected_module_source
-        break
     else
         log ERROR "Invalid choice!"
     fi

@@ -133,14 +133,14 @@ function page_prompts() {
             local command_page_name="${BASH_REMATCH[1]}"
 
             if [[ "$command_page_name" == "back" ]]; then
-                command_page_name="${page_stack[-1]}"
-
-                page_pop
-                if [[ $? -eq 1 ]]; then
-                    return 
+                if [ ${#page_stack[@]} -eq 0 ]; then
+                    exit 0
+                else
+                    command_page_name="${page_stack[-1]}"
+                    unset page_stack[-1]
                 fi
             else 
-                page_push "$page_name"
+                page_stack+=("$page_name")
             fi
 
             page $module_name $command_page_name
@@ -157,10 +157,6 @@ function page_prompts() {
     fi    
 }
 
-page_push() {
-    local page_name="$1"
-    page_stack+=("$page_name")
-}
 
 page_pop() {
     if [ ${#page_stack[@]} -eq 0 ]; then

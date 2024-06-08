@@ -47,9 +47,11 @@ function page_prompt_user_options() {
 
     PS3="$prompt_label: "
     select prompt_option in "${prompt_options_array[@]}"; do
-        if [[ $REPLY -eq 0 ]]; then
+        if [[ "$REPLY" == "0" ]]; then
             prompt_result="\${page:back}"
             break
+        elif [[ "$REPLY" == "#"  ]]; then
+            exit 1
         elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
             local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
             prompt_result=$selected_prompt_option
@@ -81,7 +83,7 @@ function page_prompt_user_question() {
         "number")
             page_prompt_user_number "$prompt_label"
             ;;
-        "yn")
+        "yN")
             page_prompt_user_yn "$prompt_label"
             ;;
         "Yn")
