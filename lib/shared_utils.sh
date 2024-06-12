@@ -15,6 +15,38 @@ function environment_match() {
     fi
 }
 
+function build_options() {
+     local -n options=$1
+
+    # Start the JSON object
+    json_string=$(jq -n '{ "options": [] }')
+
+    for key in "${!options[@]}"; do
+        value=${options[$key]}
+ 
+        option_json=$(build_option "$key" "$value")
+        json_string=$(echo "$json_string" | jq -c --argjson option "$option_json" '.options += [$option]')
+    done
+
+    echo "$json_string" 
+}
+
+function build_option() {
+    local name=$1
+    local value=$2
+
+    local json_string=$(jq -c -n --arg name "$name" --arg value "$value" '{name: $name, value: $value}')
+    echo "$json_string"
+}
+
+
+function get_configuration_property() {
+    local module_name="$1"
+    local property_name="$2"
+
+    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .[$key]' "$env_file")
+    echo "$result"
+}
 
 
 function is_array() {
@@ -27,6 +59,12 @@ function is_assoc_array() {
     declare -p "$var" 2>/dev/null | grep -q 'declare \-A'
 }
 
+#
+ # array=( "cat" "apple" "mars" )
+ # array_to_string "${array[@]}"
+ # 
+ # result: "apple,cat,mars"
+#
 function array_to_string() {
     local array=("$@")
     local str=""
@@ -39,6 +77,66 @@ function array_to_string() {
     echo "$str"
 }
 
+function sort_array() {
+	local array=("$@")
+
+	if [[ ${array[0]} =~ ^[0-9]+$ ]]; then
+		sort_array_numeric "${array[@]}"
+	elif [[ ${array[0]} =~ ^#[0-9]+ ]]; then
+        sort_array_numeric_and_remove_index "${array[@]}"
+    else
+    	sort_array_alpha_numeric "${array[@]}"
+	fi
+}
+
+#
+ # array=( "cat" "apple" "mars" )
+ # sort_array_alpha_numeric "${array[@]}"
+ # 
+ # result: ( "apple" "cat" "mars")
+#
+function sort_array_alpha_numeric() {
+	local array=("$@")
+
+	local sorted_array=($(for i in "${array[@]}"; do echo "$i"; done | sort))
+	echo "${sorted_array[@]}"
+}
+
+#
+ # array=( "11" "4" "5" )
+ # sort_array_alpha_numeric "${array[@]}"
+ # 
+ # result: ( "4" "5" "11")
+#
+function sort_array_numeric() {
+	local array=("$@")
+	local sorted_array
+
+	IFS=$'\n' sorted_array=($(echo "${array[*]}" | sort -n))
+	echo "${sorted_array[@]}"
+}
+
+#
+ # array=( "#2 cat" "#1 apple" "#5 mars" "#3 orange" )
+ # sort_array_numeric_and_remove_index "${array[@]}"
+ #
+ # result: ( "apple" "cat" "orange" "mars")
+#
+sort_array_numeric_and_remove_index() {
+	local array=("$@")
+    local sorted_array
+
+    # Sort the array based on the numeric prefix after #
+    IFS=$'\n' sorted_array=($(for item in "${array[@]}"; do echo "$item"; done | sort -t'#' -k2n))
+    
+    # Remove the numeric prefix and #
+    for i in "${!sorted_array[@]}"; do
+        sorted_array[$i]=$(echo "${sorted_array[$i]}" | sed 's/^#[0-9]* //')
+    done
+    
+    # Print the sorted array
+    echo "${sorted_array[@]}"
+}
 
 
 function print_banner() {
@@ -63,6 +161,10 @@ function print_banner() {
     echo
 }
 
+#
+ # array=()
+ # print_array "${array[@]}"
+#
 function print_array() {
     local values=("$@")
 

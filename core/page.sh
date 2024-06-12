@@ -89,19 +89,18 @@ function page_prompts() {
                         local prompt_command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
                     fi
                 fi
-            fi 
+            else 
+                local has_format=$(echo "$prompt" | jq 'has("format")')
+                if [[ $has_format == "true" ]]; then
+                    page_prompt_user_question
 
-
-            local has_format=$(echo "$prompt" | jq 'has("format")')
-            if [[ $has_format == "true" ]]; then
-                page_prompt_user_question
-
-                local has_command=$(echo "$prompt" | jq 'has("command")')
-                if [[ $has_command == "true" ]]; then
-                    local prompt_command=$(echo "$prompt" | jq '.command')
+                    local has_command=$(echo "$prompt" | jq 'has("command")')
+                    if [[ $has_command == "true" ]]; then
+                        local prompt_command=$(echo "$prompt" | jq '.command')
+                    fi
                 fi
             fi
-
+            
             log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
             page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
 

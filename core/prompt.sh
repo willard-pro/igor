@@ -3,6 +3,7 @@ prompt_result=""
 
 function page_prompt_user_options() {
     local prompt_label=$(echo $prompt | jq -r '.label')
+    local prompt_format=$(echo $prompt | jq -r '.format')
     local prompt_options_array=()
 
     prompt_label=$(replace_values "$prompt_label")
@@ -44,14 +45,31 @@ function page_prompt_user_options() {
     done
     # prompt_options_array+=("Exit")
 
-
+    sorted_prompt_options=($(sort_array "${prompt_options_array[@]}"))
     PS3="$prompt_label: "
-    select prompt_option in "${prompt_options_array[@]}"; do
+    select prompt_option in "${sorted_prompt_options[@]}"; do
         if [[ "$REPLY" == "0" ]]; then
             prompt_result="\${page:back}"
-            break
+            breakprompt_options_array
         elif [[ "$REPLY" == "#"  ]]; then
             exit 1
+        elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
+            local prompt_selections
+            IFS=',' read -ra prompt_selections <<< "$REPLY"
+
+            local valid=true
+            for prompt_selection in "${prompt_selections[@]}"; do
+                if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
+                    valid=false
+                fi
+            done
+
+            if $valid; then
+                prompt_result="$REPLY"
+                break
+            else
+                log ERROR "Invalid option within the multi selected choice!"
+            fi
         elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
             local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
             prompt_result=$selected_prompt_option
@@ -311,7 +329,7 @@ function condition_page_prompt() {
         fi
 
         local environment_condition_exit_value=1
-        local current_environment=$(get_environment)
+        local current_environment=$(environment_get)
 
 
         if [[ "$environment" == "$current_environment" ]]; then

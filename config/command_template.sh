@@ -7,10 +7,11 @@ tmp_dir=$tmp_dir
 env_file=$env_file
 file_store=$file_store
 
-source core/log.sh
+source lib/log.sh
+source lib/colors.sh
+source lib/shared_utils.sh
+
 source core/store.sh
-source core/colors.sh
-source core/util.sh
 
 source modules/$module/$command.sh
 

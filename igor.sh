@@ -91,6 +91,11 @@ run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please i
 if [ $? -eq 0 ]; then
 	exit 1
 fi
+run_command_exists "sort" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install sort and try again${RESET}."
+if [ $? -eq 0 ]; then
+	exit 1
+fi
+
 # add shuf as required command
 
 if [ -v HOME ]; then
@@ -173,7 +178,7 @@ for module_name in $module_names; do
     		cp $module_workspace/$module_name/* $modules_dir/$module_name
 
 			module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-    		module_label="$module_label (Experimental)"
+    		module_label="$module_label"
     	else
     		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
     	fi
@@ -189,6 +194,7 @@ done
 
 
 if [[ $development -eq 1 ]]; then
+	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 fi
@@ -208,9 +214,12 @@ box_key_values["Version"]=$(cat version.txt)
 print_banner "$config_dir/banner.txt" $igor_banner_color
 print_box box_key_values 
 
+
+sorted_options=($(sort_array "${options[@]}"))
+
 PS3="Select the desired module's functions to access: "
 
-select option in "${options[@]}"; do
+select option in "${sorted_options[@]}"; do
 
     if [[ "$REPLY" == "#" ]]; then
     	log_phrase

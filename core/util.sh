@@ -48,30 +48,6 @@ function get_arguments() {
     echo "${result_array[@]}"
 }
 
-function build_options() {
-     local -n options=$1
-
-    # Start the JSON object
-    json_string=$(jq -n '{ "options": [] }')
-
-    for key in "${!options[@]}"; do
-        value=${options[$key]}
- 
-        option_json=$(build_option "$key" "$value")
-        json_string=$(echo "$json_string" | jq -c --argjson option "$option_json" '.options += [$option]')
-    done
-
-    echo "$json_string" 
-}
-
-function build_option() {
-    local name=$1
-    local value=$2
-
-    local json_string=$(jq -c -n --arg name "$name" --arg value "$value" '{name: $name, value: $value}')
-    echo "$json_string"
-}
-
 
 function is_module_configured() {
     local module_name="$1"
@@ -110,12 +86,4 @@ function set_configurtion_property() {
     jq --arg name "$module_name" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then . + {($key): $value} else . end)' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
     log DEBUG "Updated environment configuration for module ${BOLD}$module_name${RESET} setting property ${BOLD}$property_name${RESET}=${BOLD}$property_value${RESET}"
-}
-
-function get_configuration_property() {
-    local module_name="$1"
-    local property_name="$2"
-
-    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .[$key]' "$env_file")
-    echo "$result"
 }
