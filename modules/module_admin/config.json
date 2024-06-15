@@ -1,14 +1,14 @@
 {
   "module": {
     "name": "module_admin",
-    "label": "Modules",
+    "label": "Dr. Frankenstein",
     "type": "bash",
     "configurable": "true"
   },
   "pages": [
     {
       "name": "main",
-      "label": "Module Administration",
+      "label": "Workbench",
       "prompts": [
         {
           "label": "Select action to take",

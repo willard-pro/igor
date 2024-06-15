@@ -52,10 +52,10 @@ function page_prompts() {
         local json_result=$(echo "$prompts" | jq -c '.[]')
 
         # Declare an empty array
-        local -a prompt_array
+        local -a prompt_array=$(read_array "$json_result")
 
         # Read the JSON result into the Bash array
-        readarray -t prompt_array <<< "$json_result"
+        # readarray -t prompt_array <<< "$json_result"
 
         # Now you can access individual elements of the Bash array
         for prompt in "${prompt_array[@]}"; do
@@ -100,7 +100,7 @@ function page_prompts() {
                     fi
                 fi
             fi
-            
+
             log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
             page_prompt_results["page.$page_name.prompt.$prompt_name"]="$prompt_result"
 

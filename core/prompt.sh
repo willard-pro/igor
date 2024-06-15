@@ -55,17 +55,20 @@ function page_prompt_user_options() {
             exit 1
         elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
             local prompt_selections
+            local prompt_options_selected=()
             IFS=',' read -ra prompt_selections <<< "$REPLY"
 
             local valid=true
             for prompt_selection in "${prompt_selections[@]}"; do
                 if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
                     valid=false
+                else
+                    prompt_options_selected+=("${prompt_options_array[$prompt_selection]}")    
                 fi
             done
 
             if $valid; then
-                prompt_result="$REPLY"
+                prompt_result=$(array_to_string "${prompt_options_selected[@]}")
                 break
             else
                 log ERROR "Invalid option within the multi selected choice!"

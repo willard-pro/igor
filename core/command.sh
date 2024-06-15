@@ -46,7 +46,7 @@ function run_command() {
 	sed -i "s/\$module/$module_name/g" $command_tmp
 	sed -i "s|\$arguments|$arguments|g" $command_tmp
 	
-	env -i /bin/bash -c "export debug=$debug && export file_store=$file_store && /bin/bash $command_tmp $arguments"
+	env -i /bin/bash -c "/bin/bash $command_tmp $arguments"
 	local command_exit_value=$?
 
 	command_result=$(store_peek)

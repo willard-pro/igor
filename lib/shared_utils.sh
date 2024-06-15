@@ -196,5 +196,21 @@ function print_box() {
     printf "╚"
     printf "═%.0s" $(seq 1 $((box_width - 2)))
     printf "╝\n"
+}
 
+#
+ # text="cat\napple\nmars
+ # read_array "$text"
+ # 
+ # result: ( "cat" "apple" "mars")
+#
+function read_array() {
+    local text="$1"
+    local array=()
+
+    while IFS= read -r line; do
+        array+=("$line")
+    done <<< "$text"    
+
+    echo "${array[@]}"
 }
