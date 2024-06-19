@@ -87,3 +87,19 @@ function set_configurtion_property() {
 
     log DEBUG "Updated environment configuration for module ${BOLD}$module_name${RESET} setting property ${BOLD}$property_name${RESET}=${BOLD}$property_value${RESET}"
 }
+
+is_version_greater() {
+    local version1=(${1//./ })
+    local version2=(${2//./ })
+
+    local len=${#version1[@]}
+    for ((i=0; i<$len; i++)); do
+        if ((10#${version2[i]} > 10#${version1[i]})); then
+            return 0
+        elif ((10#${version2[i]} < 10#${version1[i]})); then
+            return 1
+        fi
+    done
+    
+    return 1
+}

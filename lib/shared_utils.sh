@@ -77,6 +77,25 @@ function array_to_string() {
     echo "$str"
 }
 
+#
+ # array=( "cat_1" "apple_100" "mars_5" )
+ # array_search_and_replace "_" " " "${array[@]}"
+ # 
+ # result: "cat 1,apple 100,mars 5"
+#
+function array_search_and_replace() {
+    local search="$1"
+    local replace="$2"
+    shift 2
+    local array=("$@")
+
+    for i in "${!array[@]}"; do
+      array[i]="${array[i]//$search/$replace}"
+    done
+
+    echo "$array"
+}
+
 function sort_array() {
 	local array=("$@")
 
@@ -98,8 +117,9 @@ function sort_array() {
 function sort_array_alpha_numeric() {
 	local array=("$@")
 
-	local sorted_array=($(for i in "${array[@]}"; do echo "$i"; done | sort))
-	echo "${sorted_array[@]}"
+	local sorted_array=$(for i in "${array[@]}"; do echo "$i"; done | sort)
+
+	echo "$sorted_array"
 }
 
 #
@@ -113,7 +133,7 @@ function sort_array_numeric() {
 	local sorted_array
 
 	IFS=$'\n' sorted_array=($(echo "${array[*]}" | sort -n))
-	echo "${sorted_array[@]}"
+	echo "$sorted_array"
 }
 
 #
@@ -135,7 +155,7 @@ sort_array_numeric_and_remove_index() {
     done
     
     # Print the sorted array
-    echo "${sorted_array[@]}"
+    echo "$sorted_array"
 }
 
 

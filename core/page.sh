@@ -27,7 +27,8 @@ function page() {
         fi
         
         echo
-        echo -e "${BG_WHITE}${BLACK}${BOLD}$page_label${RESET}"
+        local page_label_header=$(printf "%-40s" "$page_label")
+        echo -e "${BG_WHITE}${BLACK}${BOLD}$page_label_header${RESET}"
 
     else
         log DEBUG "page ${BOLD}$page_name${RESET}"

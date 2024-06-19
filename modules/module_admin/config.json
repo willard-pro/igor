@@ -1,7 +1,7 @@
 {
   "module": {
     "name": "module_admin",
-    "label": "Dr. Frankenstein",
+    "label": "Dr Frankenstein",
     "type": "bash",
     "configurable": "true"
   },

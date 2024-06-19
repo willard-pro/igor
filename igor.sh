@@ -1,6 +1,7 @@
 #!/bin/bash
 
 debug=0
+update=0
 development=0
 
 lib_dir="lib"
@@ -16,6 +17,9 @@ env_file="$config_dir/env.json"
 file_store="$tmp_dir/$timestamp/store.txt"
 command_dir="$tmp_dir/$timestamp/commands"
 
+#
+ # Creates the temporary space and files which will contain the commands executed and their results
+#
 if [ ! -d "$tmp_dir" ]; then
 	mkdir -p $tmp_dir
 fi
@@ -28,16 +32,10 @@ if [ ! -f "$file_store" ]; then
 	touch $file_store
 fi
 
-if [ ! -d "$lib_dir" ]; then
-    echo "Error: Directory $lib_dir does not exist."
-    exit 1
-fi
-
-if [ ! -d "$core_dir" ]; then
-    echo "Error: Directory $core_dir does not exist."
-    exit 1
-fi
-
+#
+ # Loads each bash script found in ./lib
+ # These are bash scripts which wil be available by default for commands
+#
 for lib_file in "$lib_dir"/*.sh; do
     if [ -r "$lib_file" ]; then
        	if ! bash -n "$lib_file"; then
@@ -51,25 +49,34 @@ for lib_file in "$lib_dir"/*.sh; do
     fi
 done
 
+#
+ # Loads each bash script found in ./core
+ # These bash scripts form the core of Igor, pages, prompts and commands
+#
 for core_file in "$core_dir"/*.sh; do
     if [ -r "$core_file" ]; then
        	if ! bash -n "$core_file"; then
-    		echo "Syntax errors found in $core_file."
+    		log ERROR "Syntax errors found in $core_file."
     		exit 1
   		fi
   		
         source "$core_file"
     else
-        echo "Warning: Skipping non-readable or non-executable file: $core_file"
+        log WARN "Skipping non-readable or non-executable file: $core_file"
     fi
 done
 
 # Parse command line options
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --debug) debug=1
+        --update) 
+			update=1
 			;;
-        --develop) development=1
+        --debug) 
+			debug=1
+			;;
+        --develop) 
+			development=1
 			;;
         # --load-module)
         #     if [[ -n "$2" && ${2:0:1} != "-" ]]; then
@@ -84,22 +91,32 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-log DEBUG "Core loaded..."
-	
+#
+ # Check if the required commands are available on the CLI, otherwise Igor cannot function properly
+ # - curl
+ # - jq
+ # - sort
+ # - shuf
+#	
 log DEBUG "Check if all required commands are available..."
-run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install jq and try again${RESET}."
+run_command_exists "curl" "${YELLOW} ${BOLD}curl${RESET} command not found. You will not be able to update Igor to the latest version...${RESET}."
+run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Without it, Igor will be unable to parse the module configuration. Please install jq and try again${RESET}."
 if [ $? -eq 0 ]; then
 	exit 1
 fi
-run_command_exists "sort" "${YELLOW} ${BOLD}jq${RESET} command not found. Please install sort and try again${RESET}."
+run_command_exists "sort" "${YELLOW} ${BOLD}sort${RESET} command not found. Please install sort and try again${RESET}."
 if [ $? -eq 0 ]; then
 	exit 1
 fi
+run_command_exists "shuf" "${YELLOW} ${BOLD}sort${RESET} command not found. Igor will be unable to say good bye without it${RESET}."
 
-# add shuf as required command
-
-if [ -v HOME ]; then
-	if [[ ! -d "$HOME/.igor" && $development -eq 0 ]]; then
+#
+ # Checks if the environment variable HOME is available and validates that Igor is installed
+ # If not installed it will install and/or upgrade Igor into ~/.igor
+ # Create a symbolic link to /usr/local/bin/igor, such that it can be executed from anywhere
+#
+if [[ -v HOME && $development -eq 0 ]]; then
+	if [[ ! -d "$HOME/.igor" ]]; then
 		log IGOR "I sense that this is the first time you are making use of my services"
 		log IGOR "If you wish to test or improve my services invoke me with ${BOLD}--develop${RESET}"
 		prompt_user_continue "May I continue and install my workbench"
@@ -117,7 +134,7 @@ if [ -v HOME ]; then
 		log IGOR "Copy over module(s) ${BOLD}module_admin${RESET} to my workbench"
 		cp -R "./$module_dir/modules/module_admin" "$HOME/.igor/modules"
 
-		echo ln -s "$HOME/.igor/igor" /usr/local/bin/igor.sh
+		ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
 
 		log IGOR "I have completed installing and configuring my workbench"
 		log IGOR "Please delete this directory as it is no longer required"
@@ -126,17 +143,16 @@ if [ -v HOME ]; then
 		log_phrase
 		exit 0
 	else
-		if [[ "${BASH_SOURCE[0]}" != "usr/local/bin/igor" && development -eq 0 ]]; then
+		if [[ "${BASH_SOURCE[0]}" != "usr/local/bin/igor" ]]; then
 			log IGOR "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
 			exit 1
 		fi
 	fi
 fi
 
-options=()
-declare -A modules
-
-
+#
+ # Checks if the environment file has been created, if not, creates a basic environment for Igor
+#
 if [ ! -f $env_file ]; then
 	is_env_configred="false"
 	echo '{}' > "$env_file"
@@ -157,7 +173,13 @@ if [[ $is_env_configred == "false" ]]; then
 	log IGOR "This environment is unknown, complete the ${BOLD}Module Administration Confguration${RESET}"
 fi
 
-# Extract the names using jq
+#
+ # Load all available modules from the environment file
+#
+
+options=()
+declare -A modules
+
 module_names=$(jq -r '.modules[].name' $env_file)
 
 # Iterate over the names
@@ -192,12 +214,22 @@ for module_name in $module_names; do
    	fi
 done
 
+if [[ $update -eq 1 ]]; then
+	log IGOR "Checking latest version of me"
+
+	curl -s "https://raw.githubusercontent.com/$REPO/main/version.txt"
+	cat "$LOCAL_VERSION_FILE"
+
+	 git clone -q --depth 1 "https://github.com/$REPO.git" "$TEMP_DIR"
+fi
+
 
 if [[ $development -eq 1 ]]; then
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 fi
+
 
 igor_environment="unknown"
 if [ -f "$config_dir/env.json" ]; then
@@ -214,13 +246,12 @@ box_key_values["Version"]=$(cat version.txt)
 print_banner "$config_dir/banner.txt" $igor_banner_color
 print_box box_key_values 
 
-
-sorted_options=($(sort_array "${options[@]}"))
+sorted_options=$(sort_array "${options[@]}")
+while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
 
 PS3="Select the desired module's functions to access: "
 
-select option in "${sorted_options[@]}"; do
-
+select option in "${options_array[@]}"; do
     if [[ "$REPLY" == "#" ]]; then
     	log_phrase
         exit 0

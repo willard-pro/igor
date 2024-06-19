@@ -14,7 +14,9 @@ function log() {
             echo -e "${YELLOW}[WARN]${RESET} $message"
             ;;
         "INFO")
-            echo -e "${GREEN}[INFO]${RESET} $message"
+            if [[ "$debug" -eq 1 || "$development" -eq 1 ]]; then
+                echo -e "${GREEN}[INFO]${RESET} $message"
+            fi
             ;;
         "DEBUG")
             if [ "$debug" -eq 1 ]; then
@@ -32,6 +34,10 @@ function log() {
 
 function log_phrase() {
     # Get a random line from the file
-    local random_phrase=$(shuf -n 1 "$config_dir/phrases.txt")
-    log IGOR "$random_phrase"
+    if command -v "shuf" &> /dev/null; then
+        local random_phrase=$(shuf -n 1 "$config_dir/phrases.txt")
+        log IGOR "$random_phrase"
+    else
+        log IGOR "Good bye"
+    fi
 }

@@ -4,7 +4,7 @@ prompt_result=""
 function page_prompt_user_options() {
     local prompt_label=$(echo $prompt | jq -r '.label')
     local prompt_format=$(echo $prompt | jq -r '.format')
-    local prompt_options_array=()
+    local page_prompt_options=()
 
     prompt_label=$(replace_values "$prompt_label")
 
@@ -37,17 +37,19 @@ function page_prompt_user_options() {
 
             condition_page_prompt "$prompt_condition"
             if [[ $? -eq 0 ]]; then
-                prompt_options_array+=("$prompt_option")
+                page_prompt_options+=("$prompt_option")
             fi    
         else
-            prompt_options_array+=("$prompt_option")
+            page_prompt_options+=("$prompt_option")
         fi
     done
-    # prompt_options_array+=("Exit")
+    # page_prompt_options+=("Exit")
 
-    sorted_prompt_options=($(sort_array "${prompt_options_array[@]}"))
+    sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
+    while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
+
     PS3="$prompt_label: "
-    select prompt_option in "${sorted_prompt_options[@]}"; do
+    select prompt_option in "${prompt_options_array[@]}"; do
         if [[ "$REPLY" == "0" ]]; then
             prompt_result="\${page:back}"
             breakprompt_options_array

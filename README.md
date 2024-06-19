@@ -134,14 +134,14 @@ If the module requires upront configuration, please provide a page named *config
 }
 ```
 
-| Name                | Description                                                                                                                       |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| module.name         | Unique name to identify module within the module registry                                                                         |
-| module.label        | Display name of module to user                                                                                                    |
-| module.type         | For now only bash scripts are supported                                                                                           |
-| module.configurable | If true, Igor will confirm if the user has completed the module configuration, otherwise he will request the user to complete it. |
-| required.commands   | List of executables that should be available on the command line for Igor to invoke the functionality provided by the page.       |
-| pages               | To be discussed in more detail in the Page chapter                                                                                |
+| Name                | Description                                                                                                                       | Required |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |:--------:|
+| module.name         | Unique name to identify module within the module registry                                                                         | x        |
+| module.label        | Display name of module to user                                                                                                    | x        |
+| module.type         | For now only bash scripts are supported                                                                                           | x        |
+| module.configurable | If true, Igor will confirm if the user has completed the module configuration, otherwise he will request the user to complete it. | x        |
+| required.commands   | List of executables that should be available on the command line for Igor to invoke the functionality provided by the page.       |          |
+| pages               | To be discussed in more detal in the Page chapter                                                                                 | x        |
 
 ### Import a module
 
@@ -186,17 +186,19 @@ From **developer** perspective a page is a list of prompts which can lead to oth
     {
       "name": "main",
       "label": "Workbench",
+      "command": "workbench_action"
       "prompts": []
     },
     ...
   ]
 ```
 
-| Name         | Description                                                               |
-| ------------ | ------------------------------------------------------------------------- |
-| page.name    | Unique name to identify a page from all the pages found within the module |
-| page.label   | Display name of the page which will be presented to the user              |
-| page.prompts | To be discussed in more detal in the Prompt chapter                       |
+| Name         | Description                                                                                                          | Required |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- |:--------:|
+| page.name    | Unique name to identify a page from all the pages found within the module                                            | x        |
+| page.label   | Display name of the page which will be presented to the user                                                         | x        |
+| page.command | Command to execute after all prompts have been responsded too, too be discussed in more detal in the Command chapter |          |
+| page.prompts | To be discussed in more detal in the Prompt chapter                                                                  | x        |
 
 # Prompt
 
@@ -206,7 +208,7 @@ From **developer** perspective a prompt is either, single or multi select or tex
 
 ## Response
 
-The response of the user to a prompt is stored within a map and is identified by the key *page.unique_page_name.prompt.unique_prompt_name*, and can be:
+The response of the user to a prompt is stored within a map and is identified by the key *\${value:page.unique_page_name.prompt.unique_prompt_name\}*, and can be:
 
 - referenced as arguments for a command
 
@@ -215,14 +217,24 @@ The response of the user to a prompt is stored within a map and is identified by
 - added to labels and/or prompts to display a more descriptive label and/or question
 
 ```json
-    "label": "You selected to ${page.main.prompt.action} to do are you sure",
-    "condition": "${page.main.prompt.action} == 'shutdown'",
-    "command": "backup_database ${page.database.prompt.database_name}"
+    "label": "You selected to ${value:page.main.prompt.action} to do are you sure",
+    "condition": "${value:page.main.prompt.action} == 'shutdown'",
+    "command": "backup_database ${value:page.database.prompt.database_name}"
 ```
+
+Depending on the scope, a shorthand key may be used.  Within a page you may skip the page identification part and it will assume the prompt value you are seaching for is within te same page, for example *\${prompt.unique_prompt_name\}*.
 
 ## Condition
 
 Allows prompts to be visible to the user based on a condition, for example should Igor be executing within a local environment the the backing up of databases is disabled.
+
+Making use of **eval** simple if statements are supported with combition of prompt responses and/or commands. **Commands** need to return 0 for success and 1 for failure.
+
+```json
+    "condition": "${command:is_valid_git_dir}"
+    "condition": "${value:page.main.prompt.action} == 'install'"
+    "condition": "${value:page.main.prompt.size} > 100"
+```
 
 ## Validate
 
@@ -240,24 +252,19 @@ Selection based prompt provides the user with a list of options to choose from. 
       "prompts": [
         {
           "label": "Select action to take",
-          "name": "module_action",
-          "options": [
-            {
-              "name": "Install Module",
-              "value": "install",
-              "command": "${page:install_module}"
-            },
-            ...
-          ]
+          "name": "user_action",
+          "command": "execute_action ${value:prompt.user_action}"
+          "options": []
         }
       ] 
 ```
 
-| Name           | Description                                                                  |
-| -------------- | ---------------------------------------------------------------------------- |
-| prompt.name    | Unique name which identifies the prompt from all the prompts within the page |
-| prompt.label   | Display name of the prompt which will be presented to the user               |
-| prompt.options | List of all the selectable options                                           |
+| Name           | Description                                                                                                                                                     |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| prompt.name    | Unique name which identifies the prompt from all the prompts within the page                                                                                    |
+| prompt.label   | Display name of the prompt which will be presented to the user                                                                                                  |
+| prompt.command | The commad to execute after the user has responded to the prompt.  If page has defined a command, it will not be executed, as the prompt command takes priority |
+| prompt.options | List of all the selectable options, to be discussed in more detal in the Format chapter                                                                         |
 
 ### Text
 
@@ -290,7 +297,6 @@ Commands only exists from a **developer** perspective.  Command is a function fo
 **backup_database.sh**
 
 ```bash
-
 function backup_database() {
     local database_name="$1"
     local backup_filename="$2"
@@ -309,7 +315,3 @@ env -i /bin/bash -c "/bin/bash ..."
 ```
 
 # Reserved
-
-
-
-
