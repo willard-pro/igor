@@ -97,9 +97,10 @@ done
  # - jq
  # - sort
  # - shuf
+ # - unzip
 #	
 log DEBUG "Check if all required commands are available..."
-run_command_exists "curl" "${YELLOW} ${BOLD}curl${RESET} command not found. You will not be able to update Igor to the latest version...${RESET}."
+run_command_exists "curl" "${YELLOW} ${BOLD}curl${RESET} command not found. You will not be able to use Igor's update function...${RESET}."
 run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Without it, Igor will be unable to parse the module configuration. Please install jq and try again${RESET}."
 if [ $? -eq 0 ]; then
 	exit 1
@@ -109,6 +110,7 @@ if [ $? -eq 0 ]; then
 	exit 1
 fi
 run_command_exists "shuf" "${YELLOW} ${BOLD}sort${RESET} command not found. Igor will be unable to say good bye without it${RESET}."
+run_command_exists "unzip" "${YELLOW} ${BOLD}unzip${RESET} command not found. You will not be able to use Igor's update function...${RESET}."
 
 #
  # Checks if the environment variable HOME is available and validates that Igor is installed
@@ -217,20 +219,29 @@ done
 if [[ $update -eq 1 ]]; then
 	log IGOR "Checking latest version of me"
 
-	curl -s "https://raw.githubusercontent.com/$REPO/main/version.txt"
+	curl -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
 	cat "$LOCAL_VERSION_FILE"
 
-	 git clone -q --depth 1 "https://github.com/$REPO.git" "$TEMP_DIR"
+	$command_dir/semver.sh 
+
+	curl -LOJ https://github.com/exampleuser/willard-pro/igor/archive/refs/heads/main.zip
+	unzip
+
+	exit 1
 fi
 
-
+#
+ # Provide some additional information to the developer to assist with debugging on custom bash scripts
+#
 if [[ $development -eq 1 ]]; then
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 fi
 
-
+#
+ # Set Igor environment to unknown if the workbench has not yet been configured
+#
 igor_environment="unknown"
 if [ -f "$config_dir/env.json" ]; then
 	igor_environment=$(jq -r '.environment' "$config_dir/env.json")
@@ -246,6 +257,9 @@ box_key_values["Version"]=$(cat version.txt)
 print_banner "$config_dir/banner.txt" $igor_banner_color
 print_box box_key_values 
 
+#
+ # Sort options provided and display the modules sorted on label
+#
 sorted_options=$(sort_array "${options[@]}")
 while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
 
