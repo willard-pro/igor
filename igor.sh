@@ -264,6 +264,9 @@ validate_igor_home
 
 create_workspace
 load_core
+check_igor_commands
+
+igor_environment=$(jq -r '.environment' "$env_file")
 
 if [[ development -eq 1 ]]; then
 	log IGOR "Process ID $$"
@@ -271,8 +274,6 @@ if [[ development -eq 1 ]]; then
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 fi
 
-check_igor_commands
-igor_environment=$(jq -r '.environment' "$env_file")
 logo_and_banner
 
 if [[ "$igor_environment" == "unknown" ]]; then
