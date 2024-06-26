@@ -2,6 +2,7 @@
 
 debug=0
 development=0
+igor_environment="unknown"
 
 lib_dir="lib"
 core_dir="core"
@@ -23,7 +24,7 @@ command_dir="$tmp_dir/$timestamp/commands"
 function create_environment() {
 	echo '{}' > "$env_file"
 
-	jq --arg name "unknown" '. + { "environment": $name }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+	jq '. + { "environment": [] }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
 	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"	
@@ -291,38 +292,40 @@ function process_flags() {
  # Load all available modules from the environment file
 #
 function display_modules() {
-	options=()
+	local options=()
 	declare -A modules
 
-	module_names=$(jq -r '.modules[].name' $env_file)
+	local module_names=$(jq -r '.modules[].name' $env_file)
 
 	# Iterate over the names
 	for module_name in $module_names; do
 		log DEBUG "Scanning $module_name"
 
-	    if [[ $is_env_configured == "true" ]]; then
+	    if [[ "$igor_environment" != "unknown" ]]; then
 	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
 	    		mkdir $modules_dir/$module_name
 	    	fi
 
-	    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
+	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 	    	if [ "$has_workspace" = "true" ]; then
-	    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
+	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
 	    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
 
 	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
 
-				module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-	    		module_label="$module_label"
+				local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    		local module_label="$module_label"
 	    	else
-	    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    		local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 	    	fi
 
 	        # Store module directory and module name in the associative array
 	        modules["$module_label"]="$module_name"
 	        options+=("$module_label")
 	   	elif [[ "$module_name" == "module_admin" ]]; then
+	   		local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+
 	        modules["$module_label"]="$module_name"
 	        options+=("$module_label")
 	   	fi
@@ -331,7 +334,7 @@ function display_modules() {
 	#
 	 # Sort options provided and display the modules sorted on label
 	#
-	sorted_options=$(sort_array "${options[@]}")
+	local sorted_options=$(sort_array "${options[@]}")
 	while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
 
 	PS3="Select the desired module's functions to access: "
@@ -348,7 +351,46 @@ function display_modules() {
 	        log ERROR "Invalid choice!"
 	    fi
 	done
+}
 
+#
+ #
+ #
+#
+function set_environment() {
+	# Check the number of elements in the environment array
+	env_length=$(jq '.environment | length' "$env_file")
+
+	if [ "$env_length" -eq 0 ]; then
+		log IGOR "This environment is unfamiliar to me, complete ${BOLD}confguration${RESET}"
+	elif [ "$env_length" -eq 1 ]; then
+		igor_environment=$(jq -r '.environment[0]' "$env_file")
+	else
+		display_environments
+	fi	
+}
+
+#
+ #
+ #
+#
+function display_environments() {
+	log IGOR "You have configured multiple environments, please select one of the following"
+	igor_environments=($(jq -r '.environment[]' "$env_file"))
+
+	sorted_options=$(sort_array "${options[@]}")
+	while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
+
+	PS3="Please select an environment: "
+
+	select option in "${igor_environments[@]}"; do
+		if [[ " ${igor_environments[@]} " =~ " $option " ]]; then
+			igor_environment="$option"
+			break	
+	    else
+	        log ERROR "Invalid choice!"
+	    fi
+	done
 }
 
 ###############################################################################
@@ -363,8 +405,6 @@ create_workspace
 load_core
 check_igor_commands
 
-igor_environment=$(jq -r '.environment' "$env_file")
-
 if [[ development -eq 1 ]]; then
 	echo 
 	log IGOR "Process ID $$"
@@ -372,13 +412,10 @@ if [[ development -eq 1 ]]; then
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
 fi
 
+set_environment
 logo_and_banner
 
-if [[ "$igor_environment" == "unknown" ]]; then
-	is_env_configured=false
-	log IGOR "This environment is unknown, complete ${BOLD}confguration${RESET}"
-else
-	is_env_configured=true
+if [[ "$igor_environment" != "unknown" ]]; then
 	process_arguments "$@"
 fi
 

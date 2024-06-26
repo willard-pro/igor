@@ -2,6 +2,7 @@
 
 debug=$debug
 development=$development
+igor_environment=$igor_environment
 
 tmp_dir=$tmp_dir
 env_file=$env_file

@@ -41,6 +41,7 @@ function run_command() {
     sed -i "s|\$file_store|$file_store|g" $command_tmp
     sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s/\$development/$development/g" $command_tmp
+    sed -i "s/\$igor_environment/$igor_environment/g" $command_tmp
     
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp

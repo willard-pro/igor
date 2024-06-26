@@ -1,14 +1,12 @@
 
 function environment_get() {
-    local result=$(jq -r '.environment' "$env_file")
-    echo "$result"
+    echo "$igor_environment"
 }
 
 function environment_match() {
 	local environment_name="$1"
-    local result=$(jq -r '.environment' "$env_file")
 
-    if [[ "$environment_name" == "$result" ]]; then
+    if [[ "$environment_name" == "$igor_environment" ]]; then
     	return 0;
     else
     	return 1;
