@@ -134,7 +134,7 @@ function validate_igor_home() {
 function install_igor() {
 	log IGOR "I sense that this is the first time you are making use of my services"
 	log IGOR "If you wish to test or improve my services invoke me with ${BOLD}--develop${RESET}"
-	prompt_user_continue "May I continue and install my workbench"
+	page_prompt_user_continue "May I continue and install my workbench"
 	
 	log IGOR "Creating ${BOLD}~/.igor${RESET} directory which will contain configuration and Igor's projects"
 	mkdir -p "$HOME/.igor"
@@ -164,15 +164,33 @@ function install_igor() {
  #
 #
 function update_igor() {
-	log IGOR "Checking latest version of me"
+	echo
+	log IGOR "Checking if there is a new version to clone"
 
-	curl -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
-	cat "$LOCAL_VERSION_FILE"
+	local download_dir="$tmp_dir/download"
 
-	$command_dir/semver.sh 
+	if [ ! -d "$download_dir" ]; then
+		mkdir -p "$download_dir"
+	fi
 
-	curl -LOJ https://github.com/exampleuser/willard-pro/igor/archive/refs/heads/main.zip
-	unzip main.zip 
+	# curl -o "$download_dir/version.txt" -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
+	# local remote_version=$(cat "$download_dir/version.txt")
+	local remote_version="1.0.0-SNAPSHOT"
+	local igor_version=$(cat version.txt)
+
+	local version_result=$("$commands_dir/semver.sh" compare "$remote_version" "$igor_version")
+	if [ $version_result -eq 1 ]; then
+		log IGOR "New version, $remote_version has been detected"
+		echo
+		page_prompt_user_continue "May I continue and install the new version"
+
+		# curl -o "$download_dir/igor-$remote_version.zip" -LOJ https://github.com/exampleuser/willard-pro/igor/archive/refs/heads/main.zip
+		# unzip -o "$download_dir/igor-$remote_version.zip" -d "$HOME/.igor"
+
+		log IGOR "Sucessfully updated to version $remote_version"
+	else 
+		log IGOR "Already on latest version"
+	fi
 
 	exit 1
 }
@@ -197,37 +215,53 @@ function logo_and_banner() {
  # By default Igor expects no arguments, but some are supported
  # The folowing arguments are supported
  #  --update (allows for update of Igor either remote or local)
- #  --module (name of the module whose action will be executed)
- #  --action (name of the action wihtin the module to execute)
+ #  --module (name of the module whose command will be executed)
+ #  --command (name of the command wihtin the module to execute)
 #
 function process_arguments() {
+	local module=""
+	local module_command=""
+	local module_arguments=()
+
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
+	        --debug) 
+				;;
+	        --develop)
+				;;	    	
 	        --update) 
 				update_igor
 				;;
-			--module)		    
+			--module)
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
 			    	module="$2"
-			    	shift
+			    	shift 2
+
+			    	case $1 in
+						--command)
+							if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+						    	module_command="$2"
+						    	shift 2
+
+						    	while [[ "$#" -gt 0 ]]; do
+						    		module_arguments+=("$1")
+						    		shift
+						    	done
+				            else
+				                log ERROR "Missing command name after --command option"
+				                exit 1
+				            fi
+				            ;;
+				        *)
+							log ERROR "Missing --command option after --module option"
+							exit 1
+						    ;;
+					esac			    		
 	            else
 	                log ERROR "Missing module name after --module option"
 	                exit 1
 	            fi		    	
 			    ;;
-			--action)
-			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
-			    	action="$2"
-			    	shift
-	            else
-	                log ERROR "Missing module name after --action option"
-	                exit 1
-	            fi
-			    ;;
-		    *)
-				arguments+=("$1")
-				shift
-				;;            
 	    esac
 	    shift
 	done
@@ -253,6 +287,69 @@ function process_flags() {
 	done
 }
 
+#
+ # Load all available modules from the environment file
+#
+function display_modules() {
+	options=()
+	declare -A modules
+
+	module_names=$(jq -r '.modules[].name' $env_file)
+
+	# Iterate over the names
+	for module_name in $module_names; do
+		log DEBUG "Scanning $module_name"
+
+	    if [[ $is_env_configured == "true" ]]; then
+	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
+	    		mkdir $modules_dir/$module_name
+	    	fi
+
+	    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
+	    	if [ "$has_workspace" = "true" ]; then
+	    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
+
+	    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
+
+	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
+
+				module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    		module_label="$module_label"
+	    	else
+	    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+	    	fi
+
+	        # Store module directory and module name in the associative array
+	        modules["$module_label"]="$module_name"
+	        options+=("$module_label")
+	   	elif [[ "$module_name" == "module_admin" ]]; then
+	        modules["$module_label"]="$module_name"
+	        options+=("$module_label")
+	   	fi
+	done
+
+	#
+	 # Sort options provided and display the modules sorted on label
+	#
+	sorted_options=$(sort_array "${options[@]}")
+	while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
+
+	PS3="Select the desired module's functions to access: "
+
+	select option in "${options_array[@]}"; do
+	    if [[ "$REPLY" == "#" ]]; then
+	    	log_phrase
+	        exit 0
+		elif [[ " ${options[@]} " =~ " $option " ]]; then
+
+			selected_module_source=${modules["$option"]}
+			load_module $selected_module_source
+	    else
+	        log ERROR "Invalid choice!"
+	    fi
+	done
+
+}
 
 ###############################################################################
  # Main                                                                      #
@@ -269,6 +366,7 @@ check_igor_commands
 igor_environment=$(jq -r '.environment' "$env_file")
 
 if [[ development -eq 1 ]]; then
+	echo 
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
@@ -284,66 +382,5 @@ else
 	process_arguments "$@"
 fi
 
-#
- # Load all available modules from the environment file
-#
-
-options=()
-declare -A modules
-
-module_names=$(jq -r '.modules[].name' $env_file)
-
-# Iterate over the names
-for module_name in $module_names; do
-	log DEBUG "Scanning $module_name"
-
-    if [[ $is_env_configured == "true" ]]; then
-    	if [[ ! -d "$modules_dir/$module_name" ]]; then
-    		mkdir $modules_dir/$module_name
-    	fi
-
-    	has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
-    	if [ "$has_workspace" = "true" ]; then
-    		module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
-
-    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
-
-    		cp $module_workspace/$module_name/* $modules_dir/$module_name
-
-			module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-    		module_label="$module_label"
-    	else
-    		module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-    	fi
-
-        # Store module directory and module name in the associative array
-        modules["$module_label"]="$module_name"
-        options+=("$module_label")
-   	elif [[ "$module_name" == "module_admin" ]]; then
-        modules["$module_label"]="$module_name"
-        options+=("$module_label")
-   	fi
-done
-
-#
- # Sort options provided and display the modules sorted on label
-#
-sorted_options=$(sort_array "${options[@]}")
-while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
-
-PS3="Select the desired module's functions to access: "
-
-select option in "${options_array[@]}"; do
-    if [[ "$REPLY" == "#" ]]; then
-    	log_phrase
-        exit 0
-	elif [[ " ${options[@]} " =~ " $option " ]]; then
-
-		selected_module_source=${modules["$option"]}
-		load_module $selected_module_source
-    else
-        log ERROR "Invalid choice!"
-    fi
-done
-
+display_modules
 log_phrase
