@@ -52,44 +52,6 @@ function create_workspace() {
 }
 
 #
- # Loads each bash script found in ./lib
- # These are bash scripts which wil be available by default for commands
-#
-function load_libraries() {
-	for lib_file in "$lib_dir"/*.sh; do
-	    if [ -r "$lib_file" ]; then
-	       	if ! bash -n "$lib_file"; then
-	    		echo "Syntax errors found in $core_file."
-	    		exit 1
-	  		fi
-	  		
-	        source "$lib_file"
-	    else
-	        echo "Warning: Skipping non-readable or non-executable file: $core_file"
-	    fi
-	done
-}
-
-#
- # Loads each bash script found in ./core
- # These bash scripts form the core of Igor, pages, prompts and commands
-#
-function load_core() {
-	for core_file in "$core_dir"/*.sh; do
-	    if [ -r "$core_file" ]; then
-	       	if ! bash -n "$core_file"; then
-	    		log ERROR "Syntax errors found in $core_file."
-	    		exit 1
-	  		fi
-	  		
-	        source "$core_file"
-	    else
-	        log WARN "Skipping non-readable or non-executable file: $core_file"
-	    fi
-	done
-}
-
-#
  # Check if the required commands are available on the CLI, otherwise Igor cannot function properly
  # - curl
  # - jq
@@ -412,11 +374,45 @@ function display_environments() {
 ###############################################################################
 
 process_flags "$@"
-load_libraries
+
+#
+ # Loads each bash script found in ./lib
+ # These are bash scripts which wil be available by default for commands
+#
+for lib_file in "$lib_dir"/*.sh; do
+    if [ -r "$lib_file" ]; then
+       	if ! bash -n "$lib_file"; then
+    		echo "Syntax errors found in $core_file."
+    		exit 1
+  		fi
+  		
+        source "$lib_file"
+    else
+        echo "Warning: Skipping non-readable or non-executable file: $core_file"
+    fi
+done
+
 validate_igor_home
 
 create_workspace
-load_core
+
+#
+ # Loads each bash script found in ./core
+ # These bash scripts form the core of Igor, pages, prompts and commands
+#
+for core_file in "$core_dir"/*.sh; do
+    if [ -r "$core_file" ]; then
+       	if ! bash -n "$core_file"; then
+    		log ERROR "Syntax errors found in $core_file."
+    		exit 1
+  		fi
+  		
+        source "$core_file"
+    else
+        log WARN "Skipping non-readable or non-executable file: $core_file"
+    fi
+done
+
 check_igor_commands
 
 if [[ development -eq 1 ]]; then

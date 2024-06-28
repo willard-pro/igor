@@ -53,7 +53,7 @@ function page_prompts() {
         local json_result=$(echo "$prompts" | jq -c '.[]')
 
         # Declare an empty array
-        local prompt_array
+        local -a prompt_array
         while IFS= read -r line; do prompt_array+=("$line"); done <<< "$json_result"
 
         # Now you can access individual elements of the Bash array
@@ -101,7 +101,7 @@ function page_prompts() {
             fi
 
             log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"
-            page_prompt_results["page_${page_name}_prompt_${prompt_name}"]="$prompt_result"
+            page_prompt_results["page.${page_name}.prompt.${prompt_name}"]="$prompt_result"
             
             if [ -v prompt_command ]; then
                 if [[ $prompt_command =~ \$\{page:([^}]*)\} ]]; then

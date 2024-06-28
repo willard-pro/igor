@@ -8,11 +8,11 @@ function replace_values() {
     # Use a while loop to find anarrayd replace all occurrences of the pattern
     while [[ $output_string =~ $pattern ]]; do
         # Extract the key
-        key="${BASH_REMATCH[1]}"
+        local key="${BASH_REMATCH[1]}"
         if [[ ! $key == page.* ]]; then
-            key="page_${page_name}_${key}"
-        fi
-        
+            key="page.${page_name}.${key}"
+        fi    
+
         # Get the value from the associative array, if it exists
         replacement="${page_prompt_results[$key]}"
         # Replace the pattern with the value in the string
@@ -33,11 +33,10 @@ function get_arguments() {
     do
         if [[ $argument =~ \$\{value:([^}]+)\} ]]; then
             local key="${BASH_REMATCH[1]}"
-        
             if [[ ! $key == page.* ]]; then
-                key="page_${page_name}_${key}"
+                key="page.${page_name}.${key}"
             fi
-        
+
             result_array+=("${page_prompt_results[$key]}")
         else
             result_array+=("$argument")

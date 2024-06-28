@@ -53,7 +53,7 @@ function run_command() {
 	local command_exit_value=$?
 
 	command_result=$(store_peek)
-    command_results["${module_name}_${command}"]="$command_result"
+    command_results["${module_name}.${command}"]="$command_result"
 
 	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$command_result${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
 

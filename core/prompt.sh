@@ -55,7 +55,7 @@ function page_prompt_user_options() {
     select prompt_option in "${prompt_options_array[@]}"; do
         if [[ "$REPLY" == "0" ]]; then
             prompt_result="\${page:back}"
-            breakprompt_options_array
+            break
         elif [[ "$REPLY" == "#"  ]]; then
             exit 1
         elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
