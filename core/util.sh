@@ -10,7 +10,7 @@ function replace_values() {
         # Extract the key
         key="${BASH_REMATCH[1]}"
         if [[ ! $key == page.* ]]; then
-            key="page.$page_name.$key"
+            key="page_${page_name}_${key}"
         fi
         
         # Get the value from the associative array, if it exists
@@ -35,7 +35,7 @@ function get_arguments() {
             local key="${BASH_REMATCH[1]}"
         
             if [[ ! $key == page.* ]]; then
-                key="page.$page_name.$key"
+                key="page_${page_name}_${key}"
             fi
         
             result_array+=("${page_prompt_results[$key]}")

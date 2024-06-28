@@ -28,7 +28,9 @@ function page_prompt_user_options() {
         fi        
     fi    
 
-    readarray -t prompt_options <<< "$prompt_options_all"
+    local prompt_options
+    while IFS= read -r line; do prompt_options+=("$line"); done <<< "$prompt_options_all"
+
     for prompt_option in "${prompt_options[@]}"; do
         local has_condition=$(echo "$prompt" | jq --arg name "$prompt_option" '.options[] | select(.name == $name) | has("condition")')
 
@@ -45,6 +47,7 @@ function page_prompt_user_options() {
     done
     # page_prompt_options+=("Exit")
 
+    local prompt_options_array
     sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
     while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
 

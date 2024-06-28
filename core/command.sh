@@ -24,10 +24,12 @@ function run_command() {
         mkdir -p "$command_dir/$module_name" 
     fi
 
-    local command_tmp="${session_commands[$module_name.$command]}"
+    log DEBUG "Building tempory command for module ${BOLD}$module_name${RESET} command ${BOLD}$command${RESET}"
+
+    local command_tmp="${session_commands[${module_name}_${command}]}"
     if [ ! -n "$command_tmp" ]; then
         command_tmp=$(mktemp -p "$command_dir/$module_name" "${command}_XXXX")
-        session_commands["$module_name.$command"]="$command_tmp"
+        session_commands["${module_name}_${command}"]="$command_tmp"
 
         log DEBUG "Created tempory command script ${BOLD}$command_tmp${RESET} for command ${BOLD}$command${RESET} in module ${BOLD}$module_name${RESET}"
     fi
@@ -51,7 +53,7 @@ function run_command() {
 	local command_exit_value=$?
 
 	command_result=$(store_peek)
-    command_results["$module_name.$command"]="$command_result"
+    command_results["${module_name}_${command}"]="$command_result"
 
 	log DEBUG "Exit code ${BOLD}$command_exit_value${RESET} and value ${BOLD}$command_result${RESET} returned for running command ./modules/$module_name/$command.sh $arguments"
 
