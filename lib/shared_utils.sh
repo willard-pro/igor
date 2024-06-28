@@ -68,7 +68,7 @@ function array_to_string() {
     local str=""
 
     for item in "${array[@]}"; do
-        str+="\"$item\","
+        str+="$item,"
     done
 
     str="${str%,}"

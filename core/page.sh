@@ -117,7 +117,7 @@ function page_prompts() {
             fi
         done
 
-        if [ -z "$page_command" ]; then
+        if [ -z "$page_command" ]; then 
             local has_command=$(jq -r --arg page_name "$page_name" '.pages[] | select(.name == $page_name) | has ("command")' < $module_config)
 
             if [[ $has_command == "true" ]]; then

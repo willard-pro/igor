@@ -309,6 +309,9 @@ function display_modules() {
 
 			selected_module_source=${modules["$option"]}
 			load_module $selected_module_source
+
+			log_phrase
+			exit 0
 	    else
 	        log ERROR "Invalid choice!"
 	    fi

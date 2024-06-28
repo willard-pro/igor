@@ -68,7 +68,8 @@ function page_prompt_user_options() {
                 if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
                     valid=false
                 else
-                    prompt_options_selected+=("${prompt_options_array[$prompt_selection-1]}")    
+                    local selected_prompt_option=$(echo $prompt | jq -r --arg selected "${prompt_options_array[$prompt_selection-1]}" '.options[] | select (.name == $selected) | .value')
+                    prompt_options_selected+=("$selected_prompt_option")    
                 fi
             done
 
