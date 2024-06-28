@@ -68,7 +68,7 @@ function page_prompt_user_options() {
                 if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
                     valid=false
                 else
-                    prompt_options_selected+=("${prompt_options_array[$prompt_selection]}")    
+                    prompt_options_selected+=("${prompt_options_array[$prompt_selection-1]}")    
                 fi
             done
 
@@ -80,7 +80,7 @@ function page_prompt_user_options() {
             fi
         elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
             local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
-            prompt_result=$selected_prompt_option
+            prompt_result="$selected_prompt_option"
             break
         else
             log ERROR "Invalid choice!"
