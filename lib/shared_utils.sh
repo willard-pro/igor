@@ -168,7 +168,7 @@ function print_banner() {
     fi
 
     if [ ! -v font_color ]; then
-        font_color=${WHITE}
+        font_color=""
     fi
 
     echo

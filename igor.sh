@@ -208,7 +208,7 @@ function logo_and_banner() {
 	box_key_values["Environment"]=$(jq -r --arg name "$igor_environment" '.environment[] | select(.name == $name) | .label' "$config_dir/default.json")
 	box_key_values["Version"]=$(cat version.txt)
 
-	print_banner "$config_dir/banner.txt" $igor_banner_color
+	print_banner "$config_dir/banner/igor.txt" $igor_banner_color
 	print_box box_key_values 
 }
 
@@ -371,21 +371,35 @@ function set_environment() {
 }
 
 #
- #
- #
+ # Informs the user that Igor has been configured for multiple environments
+ # and the environment to operate within needs to be selected
 #
 function display_environments() {
-	log IGOR "You have configured multiple environments, please select one of the following"
-	igor_environments=($(jq -r '.environment[]' "$env_file"))
+	print_banner "$config_dir/banner/env.txt"	
+	log IGOR "You have configured multiple environments"
 
-	sorted_options=$(sort_array "${options[@]}")
-	while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
+	local igor_environment_options=()
+
+	local igor_environments=($(jq -r '.environment[]' "$env_file"))
+	for igor_env in "${igor_environments[@]}"; do
+		local igor_environment_label=$(jq -r --arg name "$igor_env" '.environment[] | select(.name == $name) | .label' "$config_dir/default.json")
+		igor_environment_options+=("$igor_environment_label")
+	done
+
+
+	local igor_environment_options_sorted=$(sort_array "${igor_environment_options[@]}")
+	while IFS= read -r line; do igor_environment_options_array+=("$line"); done <<< "$igor_environment_options_sorted"
 
 	PS3="Please select an environment: "
 
-	select option in "${igor_environments[@]}"; do
-		if [[ " ${igor_environments[@]} " =~ " $option " ]]; then
-			igor_environment="$option"
+	select option in "${igor_environment_options_array[@]}"; do
+		if [[ " ${igor_environment_options[@]} " =~ " $option " ]]; then
+			igor_environment=$(jq -r --arg name "$option" '.environment[] | select(.label == $name) | .name' "$config_dir/default.json")
+
+			local igor_environment_color=$(jq -r --arg name "$igor_environment" '.environment[] | select(.name == $name) | .banner_color' "$config_dir/default.json")
+			local igor_environment_color=$(to_color "$igor_environment_color")
+
+			log IGOR "You have selected the $igor_environment_color${BOLD}$option${RESET} environment!"
 			break	
 	    else
 	        log ERROR "Invalid choice!"
@@ -406,10 +420,10 @@ load_core
 check_igor_commands
 
 if [[ development -eq 1 ]]; then
-	echo 
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
+	echo
 fi
 
 set_environment
