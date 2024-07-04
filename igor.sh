@@ -18,6 +18,25 @@ file_store="$tmp_dir/$timestamp/store.txt"
 command_dir="$tmp_dir/$timestamp/commands"
 
 #
+ # Prints the basic usage of igor
+#
+function usage() {
+	echo "Usage: igor [options]"
+	echo
+	echo "Options:"
+	echo "  --command module:command  Invokes a command of from a specified module directly"
+	echo "  --develop                 Enables development mode"
+	echo "  --help                    Show this help message and exit"
+	echo "  --update                  Performs a version check and updates if a later version is available"
+	echo "  --verbose                 Enable verbose mode"
+	echo
+	echo "Examples:"
+	echo "  igor --command module_admin:create_module 'my_new_module' 'New Module' ~/workspace/igor-modules/my_new_module"
+  
+exit 0
+}
+
+#
  # Creates a basic environment for Igor
 #
 
@@ -176,9 +195,9 @@ function logo_and_banner() {
 
 #
  # By default Igor expects no arguments, but some are supported
- # The folowing arguments are supported
+ #
+ # The folowing arguments are supported:
  #  --update (allows for update of Igor either remote or local)
- #  --module (name of the module whose command will be executed)
  #  --command (name of the command wihtin the module to execute)
 #
 function process_arguments() {
@@ -188,40 +207,36 @@ function process_arguments() {
 
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
-	        --debug) 
+	        --verbose) 
 				;;
 	        --develop)
+				;;
+			--help)
 				;;	    	
 	        --update) 
 				update_igor
 				;;
-			--module)
+			--command)
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
-			    	module="$2"
-			    	shift 2
+			    	command="$2"
+			    	shift 2			    	
 
-			    	case $1 in
-						--command)
-							if [[ -n "$2" && ${2:0:1} != "-" ]]; then
-						    	module_command="$2"
-						    	shift 2
-
-						    	while [[ "$#" -gt 0 ]]; do
-						    		module_arguments+=("$1")
-						    		shift
-						    	done
-				            else
-				                log ERROR "Missing command name after --command option"
-				                exit 1
-				            fi
-				            ;;
-				        *)
-							log ERROR "Missing --command option after --module option"
-							exit 1
-						    ;;
-					esac			    		
+			    	if [[ "$command" =~ ^[a-zA-Z]+:[a-zA-Z]+$ ]]; then
+			    		if has_command "$command"; then
+					    	while [[ "$#" -gt 0 ]]; do
+					    		module_arguments+=("$1")
+					    		shift
+					    	done
+					    else
+					    	log IGOR "I have no knowledge of such a command"
+					    	exit 1
+					    fi
+				    else 
+				   		log ERROR "Command to execute should adhere to the pattern module:command, see usage for more details..."
+				   		exit 1
+				    fi
 	            else
-	                log ERROR "Missing module name after --module option"
+	                log ERROR "Missing command name after --command option"
 	                exit 1
 	            fi		    	
 			    ;;
@@ -232,6 +247,7 @@ function process_arguments() {
 
 #
  # By default Igor expects no flags, but some are supported
+ #
  # The folowing flags are supported
  #  --debug (enabe debug logging)
  #  --develop (enable development mode)
@@ -239,12 +255,15 @@ function process_arguments() {
 function process_flags() {
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
-	        --debug) 
+	        --verbose) 
 				debug=1
 				;;
 	        --develop)
 				development=1
 				;;
+			--help)
+				usage
+				;;	    					
 	    esac
 	    shift
 	done

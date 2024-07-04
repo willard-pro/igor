@@ -111,3 +111,25 @@ function run_command_condition() {
         return $((0 ^ $command_not))
     fi
 }
+
+#
+ # Returns 0 if the module has the command available
+#
+function has_command() {
+    local module_command="$1"
+
+    module_name="${module_command%%:*}"
+    command_name="${input_string##*:}"
+
+    if [ -d "$$modules_dir/$module_name" ]; then
+        if [ -f "$$modules_dir/$module_name" ]; then
+            return 0
+        else 
+            log ERROR "Module $module_name has no such command $command_name"
+        fi
+    else
+        log ERROR "No such module $module_name"
+    fi
+
+    return 1
+}
