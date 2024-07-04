@@ -213,20 +213,15 @@ function process_arguments() {
 				;;
 			--help)
 				;;	    	
-	        --update) 
-				update_igor
-				;;
 			--command)
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
 			    	command="$2"
-			    	shift 2			    	
+			    	shift 2
 
 			    	if [[ "$command" =~ ^[a-zA-Z]+:[a-zA-Z]+$ ]]; then
 			    		if has_command "$command"; then
-					    	while [[ "$#" -gt 0 ]]; do
-					    		module_arguments+=("$1")
-					    		shift
-					    	done
+					    	run_command_direct "$command" "$@"
+					    	exit 0
 					    else
 					    	log IGOR "I have no knowledge of such a command"
 					    	exit 1
@@ -240,6 +235,9 @@ function process_arguments() {
 	                exit 1
 	            fi		    	
 			    ;;
+	        --update) 
+				update_igor
+				;;
 	    esac
 	    shift
 	done
@@ -252,18 +250,25 @@ function process_arguments() {
  #  --debug (enabe debug logging)
  #  --develop (enable development mode)
 #
-function process_flags() {
+function pre_process_arguments() {
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
-	        --verbose) 
-				debug=1
+	    	--command)
 				;;
 	        --develop)
 				development=1
 				;;
 			--help)
 				usage
-				;;	    					
+				;;
+			--update)
+				;;
+	        --verbose) 
+				debug=1
+				;;
+			*)
+				usage
+				;;
 	    esac
 	    shift
 	done
@@ -395,7 +400,7 @@ function display_environments() {
  # Main                                                                      #
 ###############################################################################
 
-process_flags "$@"
+pre_process_arguments "$@"
 
 #
  # Loads each bash script found in ./lib

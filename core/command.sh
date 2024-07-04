@@ -60,6 +60,19 @@ function run_command() {
 	return $command_exit_value
 }
 
+#
+ #
+#
+function run_command_direct() {
+    local module_command="$1"
+    shift
+
+    local module_name="${module_command%%:*}"
+    local command_name="${input_string##*:}"
+
+    run_command "$module_name" "$command_name" "$@"
+}
+
  # Function to check command existence and display error message if not found
 function run_command_exists() {
     local command_name=$1
@@ -118,8 +131,8 @@ function run_command_condition() {
 function has_command() {
     local module_command="$1"
 
-    module_name="${module_command%%:*}"
-    command_name="${input_string##*:}"
+    local module_name="${module_command%%:*}"
+    local command_name="${input_string##*:}"
 
     if [ -d "$$modules_dir/$module_name" ]; then
         if [ -f "$$modules_dir/$module_name" ]; then
@@ -133,3 +146,4 @@ function has_command() {
 
     return 1
 }
+
