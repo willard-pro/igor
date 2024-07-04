@@ -1,5 +1,6 @@
 #!/bin/bash
 
+admin=0
 debug=0
 development=0
 igor_environment="unknown"
@@ -24,6 +25,7 @@ function usage() {
 	echo "Usage: igor [options]"
 	echo
 	echo "Options:"
+	echo "  --admin					  Enables administrative mode"
 	echo "  --command module:command  Invokes a command of from a specified module directly"
 	echo "  --develop                 Enables development mode"
 	echo "  --help                    Show this help message and exit"
@@ -207,6 +209,8 @@ function process_arguments() {
 
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
+	    	--admin)
+				;;
 	        --verbose) 
 				;;
 	        --develop)
@@ -253,6 +257,9 @@ function process_arguments() {
 function pre_process_arguments() {
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
+	    	--admin)
+				admin=1
+				;;
 	    	--command)
 				;;
 	        --develop)
@@ -287,7 +294,7 @@ function display_modules() {
 	for module_name in $module_names; do
 		log DEBUG "Scanning $module_name"
 
-	    if [[ "$igor_environment" != "unknown" ]]; then
+	    if [[ $admin -eq 0 ]]; then
 	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
 	    		mkdir $modules_dir/$module_name
 	    	fi
@@ -299,16 +306,17 @@ function display_modules() {
 	    		log DEBUG "Copy experimental module from $module_workspace/$module_name"
 
 	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
-
-				local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-	    		local module_label="$module_label"
-	    	else
-	    		local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 	    	fi
 
-	        # Store module directory and module name in the associative array
-	        modules["$module_label"]="$module_name"
-	        options+=("$module_label")
+    		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
+				local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
+
+		        # Store module directory and module name in the associative array
+		        modules["$module_label"]="$module_name"
+		        options+=("$module_label")
+		    else 
+		    	log ERROR "Invalid configuration file for module named ${BOLD}$module_name${RESET}, skipping..."
+		    fi
 	   	elif [[ "$module_name" == "module_admin" ]]; then
 	   		local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 

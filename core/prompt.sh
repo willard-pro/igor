@@ -12,12 +12,13 @@ function page_prompt_user_options() {
     if [ "$is_array" == "true" ]; then
         local prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
     else
-        local prompt_options_all=$(echo "$prompt" | jq '.options')
+        local prompt_options_all=$(echo "$prompt" | jq -r '.options')
 
         if [[ $prompt_options_all =~ \$\{command:([^}]*)\} ]]; then
             local command="${BASH_REMATCH[1]}"
-            
-            local command_arguments=$(get_arguments "$command")
+            local prompt_command_arguments="${prompt_options_all#*\$\{command:${command}\}}"
+
+            local command_arguments=$(get_arguments "$command$prompt_command_arguments")
             local command_only="${command%% *}"
 
             run_command "$module_name" "$command_only" ${command_arguments[@]}
