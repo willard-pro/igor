@@ -6,6 +6,7 @@ igor_environment=$igor_environment
 
 tmp_dir=$tmp_dir
 env_file=$env_file
+timestamp=$timestamp
 file_store=$file_store
 
 source lib/log.sh
