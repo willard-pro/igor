@@ -318,6 +318,10 @@ function display_modules() {
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
 				local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 
+				if [ "$has_workspace" = "true" ]; then
+					module_label="$module_label (*)"
+				fi
+
 		        # Store module directory and module name in the associative array
 		        modules["$module_label"]="$module_name"
 		        options+=("$module_label")
