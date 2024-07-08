@@ -327,29 +327,37 @@ function display_modules() {
 	   	fi
 	done
 
-	#
-	 # Sort options provided and display the modules sorted on label
-	#
-	local sorted_options=$(sort_array "${options[@]}")
-	while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
+	module_count=${#options[@]}
 
-	PS3="Select the desired module's functions to access: "
+	if [ $module_count -eq 0 ]; then
+		log IGOR "No modules have been installed and/or created"
+		log IGOR "Invoke administrative mode to add and/or create new modules, by running ${BOLD}${YELLOW}igor --admin${RESET}"
+		exit 1
+	else 
+#
+ # Sort options provided and display the modules sorted on label
+#
+		local sorted_options=$(sort_array "${options[@]}")
+		while IFS= read -r line; do options_array+=("$line"); done <<< "$sorted_options"
 
-	select option in "${options_array[@]}"; do
-	    if [[ "$REPLY" == "#" ]]; then
-	    	log_phrase
-	        exit 0
-		elif [[ " ${options[@]} " =~ " $option " ]]; then
+		PS3="Select the desired module's functions to access: "
 
-			selected_module_source=${modules["$option"]}
-			load_module $selected_module_source
+		select option in "${options_array[@]}"; do
+		    if [[ "$REPLY" == "#" ]]; then
+		    	log_phrase
+		        exit 0
+			elif [[ " ${options[@]} " =~ " $option " ]]; then
 
-			log_phrase
-			exit 0
-	    else
-	        log ERROR "Invalid choice!"
-	    fi
-	done
+				selected_module_source=${modules["$option"]}
+				load_module $selected_module_source
+
+				log_phrase
+				exit 0
+		    else
+		        log ERROR "Invalid choice!"
+		    fi
+		done
+	fi
 }
 
 #
@@ -361,10 +369,18 @@ function set_environment() {
 	env_length=$(jq '.environment | length' "$env_file")
 
 	if [ "$env_length" -eq 0 ]; then
-		log IGOR "This environment is unfamiliar to me, complete ${BOLD}confguration${RESET}"
+		log ERROR "This environment is unfamiliar to me, please ${BOLD}configure${RESET}"
+
+		if [ $admin -eq 0 ]; then
+			log IGOR "Invoke administrative mode to configure the environment, by running ${BOLD}${YELLOW}igor --admin${RESET}"
+			exit 1
+		fi 
 	elif [ "$env_length" -eq 1 ]; then
 		igor_environment=$(jq -r '.environment[0]' "$env_file")
-	else
+	elif [ $admin -eq 0 ]; then
+# 
+ # Environments is not applicable to administrative mode
+#		
 		display_environments
 	fi	
 }

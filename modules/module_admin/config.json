@@ -156,6 +156,7 @@
         {
           "label": "Select the environment applicable",
           "name": "environment",
+          "format": "multi",
           "options": [
             {
               "name": "Local",
