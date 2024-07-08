@@ -294,7 +294,14 @@ function display_modules() {
 	for module_name in $module_names; do
 		log DEBUG "Scanning $module_name"
 
-	    if [[ $admin -eq 0 ]]; then
+		local skip
+		if [[ $admin -eq 0 && "$module_name" == "module_admin" ]] || [[ $admin -ne 0 && "$module_name" != "module_admin" ]]; then
+		    skip=1
+		else
+		    skip=0
+		fi
+
+	    if [[ skip -eq 0 ]]; then
 	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
 	    		mkdir $modules_dir/$module_name
 	    	fi
@@ -317,11 +324,6 @@ function display_modules() {
 		    else 
 		    	log ERROR "Invalid configuration file for module named ${BOLD}$module_name${RESET}, skipping..."
 		    fi
-	   	elif [[ "$module_name" == "module_admin" ]]; then
-	   		local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
-
-	        modules["$module_label"]="$module_name"
-	        options+=("$module_label")
 	   	fi
 	done
 
