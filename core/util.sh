@@ -8,7 +8,7 @@ function encrypt() {
 
     local hash=$(jq -r '.hash' "$env_file")
 
-    echo "$input_string" | openssl enc -pbkdf2 -a -salt -pass pass:"$hash"
+    echo "$input_string" | openssl enc -aes-256-cbc -pbkdf2 -a -salt -pass pass:"$hash"
 }
 
 #
@@ -20,7 +20,7 @@ function decrypt() {
 
     local hash=$(jq -r '.hash' "$env_file")
 
-    echo "$input_string" | openssl enc -pbkdf2 -d -a -salt -pass pass:"$hash"
+    echo "$input_string" | openssl enc -aes-256-cbc -pbkdf2 -d -a -salt -pass pass:"$hash"
 }
 
 function replace_values() {

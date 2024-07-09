@@ -52,42 +52,54 @@ function page_prompt_user_options() {
     sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
     while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
 
-    PS3="$prompt_label: "
-    select prompt_option in "${prompt_options_array[@]}"; do
-        if [[ "$REPLY" == "0" ]]; then
-            prompt_result="\${page:back}"
-            break
-        elif [[ "$REPLY" == "#"  ]]; then
-            exit 1
-        elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
-            local prompt_selections
-            local prompt_options_selected=()
-            IFS=',' read -ra prompt_selections <<< "$REPLY"
+    prompt_options_length=${#page_prompt_options[@]}
+    if [ $prompt_options_length -eq 0 ]; then
+        log ERROR "No options available for prompt ${BOLD}$prompt_label${RESET}"
+        exit 1
+    elif [ $prompt_options_length -eq 1 ]; then
+        local prompt_option=${page_prompt_options[0]}
+        local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
+        prompt_result="$selected_prompt_option"
 
-            local valid=true
-            for prompt_selection in "${prompt_selections[@]}"; do
-                if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
-                    valid=false
+        log IGOR "For ${BOLD}$prompt_label${RESET}, the only option available is ${BOLD}${prompt_option}${RESET}, selected by default"
+    else
+        PS3="$prompt_label: "
+        select prompt_option in "${prompt_options_array[@]}"; do
+            if [[ "$REPLY" == "0" ]]; then
+                prompt_result="\${page:back}"
+                break
+            elif [[ "$REPLY" == "#"  ]]; then
+                exit 1
+            elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
+                local prompt_selections
+                local prompt_options_selected=()
+                IFS=',' read -ra prompt_selections <<< "$REPLY"
+
+                local valid=true
+                for prompt_selection in "${prompt_selections[@]}"; do
+                    if (( prompt_selection <= 0 || prompt_selection > ${#prompt_options_array[@]} )); then
+                        valid=false
+                    else
+                        local selected_prompt_option=$(echo $prompt | jq -r --arg selected "${prompt_options_array[$prompt_selection-1]}" '.options[] | select (.name == $selected) | .value')
+                        prompt_options_selected+=("$selected_prompt_option")    
+                    fi
+                done
+
+                if $valid; then
+                    prompt_result=$(array_to_string "${prompt_options_selected[@]}")
+                    break
                 else
-                    local selected_prompt_option=$(echo $prompt | jq -r --arg selected "${prompt_options_array[$prompt_selection-1]}" '.options[] | select (.name == $selected) | .value')
-                    prompt_options_selected+=("$selected_prompt_option")    
+                    log ERROR "Invalid option within the multi selected choice!"
                 fi
-            done
-
-            if $valid; then
-                prompt_result=$(array_to_string "${prompt_options_selected[@]}")
+            elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
+                local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
+                prompt_result="$selected_prompt_option"
                 break
             else
-                log ERROR "Invalid option within the multi selected choice!"
+                log ERROR "Invalid choice!"
             fi
-        elif [[ " ${prompt_options_array[@]} " =~ " $prompt_option " ]]; then
-            local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
-            prompt_result="$selected_prompt_option"
-            break
-        else
-            log ERROR "Invalid choice!"
-        fi
-    done
+        done
+    fi
 }
 
 function page_prompt_user_question() {
