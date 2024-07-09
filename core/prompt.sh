@@ -132,6 +132,9 @@ function page_prompt_user_question() {
         "file")
             page_prompt_user_file "$prompt_label"
             ;;
+        "yyyy-mm-dd")
+            page_prompt_user_date "$prompt_label" "$prompt_format"
+            ;;            
         *)
             log ERROR "Unsupported prompt format ${BOLD}$prompt_format${RESET}"
             exit 1 
@@ -272,6 +275,23 @@ function page_prompt_user_file() {
             break
         else
             log ERROR "Invalid input. Please enter a valid file path."
+        fi                
+    done
+}
+
+
+function page_prompt_user_date() {
+    local prompt_label="$1"
+    local prompt_format="$2"
+
+    while true; do
+        read -r -p "$prompt_label ($prompt_format):" response
+
+        if is_date "$response"; then
+            prompt_result=$response
+            break
+        else
+            log ERROR "Invalid input. Please enter a date in the format ${BOLD}$prompt_format${RESET}."
         fi                
     done
 }
@@ -425,4 +445,25 @@ is_file() {
     else
         return 1
     fi
+}
+
+is_date() {
+    local value="$1"
+    local date_format="$2"
+
+    case $date_format in
+        "yyyy-mm-dd")
+            is_date_yyyy_mm_dd "$value"
+            ;;
+    esac
+}
+
+is_date_yyyy_mm_dd() {
+    local value="$1"
+
+    if date -d "$user_date" >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi    
 }

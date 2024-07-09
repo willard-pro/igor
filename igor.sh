@@ -28,13 +28,16 @@ function usage() {
 	echo "  --admin					  Enables administrative mode"
 	echo "  --command module:command  Invokes a command of from a specified module directly"
 	echo "  --develop                 Enables development mode"
+	echo "  --decrypt                 Decrypts the specified text"
+	echo "  --encrypt                 Encrypts the specified text"
 	echo "  --help                    Show this help message and exit"
 	echo "  --update                  Performs a version check and updates if a later version is available"
 	echo "  --verbose                 Enable verbose mode"
 	echo
 	echo "Examples:"
+	echo "  igor -encrypt MySecr3tPassw0rd"
 	echo "  igor --command module_admin:create_module 'my_new_module' 'New Module' ~/workspace/igor-modules/my_new_module"
-  
+
 exit 0
 }
 
@@ -45,7 +48,10 @@ exit 0
 function create_environment() {
 	echo '{}' > "$env_file"
 
+	local hash=$(openssl rand -base64 32)
+
 	jq '. + { "environment": [] }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+	jq --arg name "$hash" '. + { "hash":  $name }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
 	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"	
@@ -203,10 +209,6 @@ function logo_and_banner() {
  #  --command (name of the command wihtin the module to execute)
 #
 function process_arguments() {
-	local module=""
-	local module_command=""
-	local module_arguments=()
-
 	while [[ "$#" -gt 0 ]]; do
 	    case $1 in
 	    	--admin)
@@ -239,6 +241,24 @@ function process_arguments() {
 	                exit 1
 	            fi		    	
 			    ;;
+			--decrypt)
+				if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+					decrypt "$2"
+					exit 1
+	            else
+	                log ERROR "Missing text after --decrypt option"
+	                exit 1
+	            fi		    	
+				;;
+			--encrypt)
+				if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+					encrypt "$2"
+					exit 1
+	            else
+	                log ERROR "Missing text after --encrypt option"
+	                exit 1
+	            fi		    	
+				;;
 	        --update) 
 				update_igor
 				;;
@@ -261,9 +281,22 @@ function pre_process_arguments() {
 				admin=1
 				;;
 	    	--command)
+			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+			    	shift 2
+	            fi		    	
 				;;
 	        --develop)
 				development=1
+				;;
+			--decrypt)
+			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+			    	shift 2
+	            fi		    	
+				;;
+			--encrypt)
+			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+			    	shift 2
+	            fi		    	
 				;;
 			--help)
 				usage
