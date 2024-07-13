@@ -8,10 +8,10 @@ function page_prompt_user_options() {
 
     prompt_label=$(replace_values "$prompt_label")
 
-    local sort_options=true
+    local sort_options="asc"
     local has_sort=$(echo "$prompt" | jq --arg name "$prompt_option" 'has("sort")')
     if [[ $has_sort == "true" ]]; then
-        sort_options=$(echo "$prompt" | jq --arg name "$prompt_option" '.sort')
+        sort_options=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.sort')
     fi
 
     local is_array=$(echo "$prompt" | jq '.options | type == "array"')
@@ -54,11 +54,15 @@ function page_prompt_user_options() {
     done
 
     local prompt_options_array=()
-    if $sort_options; then
+
+    if [[ "$sort_options" == "asc" ]]; then
         sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
         while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
-    else 
+    elif [[ "$sort_options" == "none" ]]; then
         prompt_options_array=("${page_prompt_options[@]}")
+    else 
+        log ERROR "Unknown sort option ${BOLD}$sort_options${RESET}"
+        exit 1
     fi
 
     prompt_options_length=${#page_prompt_options[@]}
