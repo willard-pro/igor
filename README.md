@@ -45,7 +45,7 @@ Examples:
 Download the script install-igor.sh and execute.
 
 ```
-curl -o install-igor.sh http://example.com/path/to/install.sh && chmod +x install-igor.sh && ./install-igor.sh
+curl -o install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x install-igor.sh && ./install-igor.sh
 ```
 
 ### Individual Configuration

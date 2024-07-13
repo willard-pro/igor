@@ -1,11 +1,6 @@
+#!/bin/bash
 
-#
- # Create a symbolic link to /usr/local/bin/igor, such that it can be executed from anywhere
-#
-function install_igor() {
-	# curl -o "$download_dir/igor-$remote_version.zip" -LOJ https://github.com/exampleuser/willard-pro/igor/archive/refs/heads/main.zip
-	# unzip -o "$download_dir/igor-$remote_version.zip" -d "$HOME/.igor"
+curl -o $TMPDIR/igor.latest.zip -LOJ https://github.com/willard-pro/igor/archive/refs/heads/main.zip
+unzip -o $TMPDIR/igor.latest.zip -d "$HOME/.igor"
 
-
-
-}
+ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
