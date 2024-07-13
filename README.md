@@ -42,7 +42,7 @@ Examples:
 
 ## Install
 
-Download the script [install.sh](https://raw.githubusercontent.com/willard-pro/igor/main/install.sh) and execute.
+Download and install the script [install.sh](https://raw.githubusercontent.com/willard-pro/igor/main/install.sh).
 
 ```
 curl -o install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x install-igor.sh && ./install-igor.sh
@@ -50,7 +50,7 @@ curl -o install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/
 
 ### Individual Configuration
 
-Use this approach when you are installing Igor as for private use such as on your own personal laptop and/or standalone server.
+When running Igor for the fist time it will request that you complete the configuration. More detail available in [Configuration](#Configuration).
 
 ### Team Configuration
 
