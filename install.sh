@@ -16,10 +16,15 @@ if [[ -f igor.sh ]]; then
 	cp -R . "$HOME/.igor"
 else
 	curl -o /tmp/igor.latest.zip -LOJ https://github.com/willard-pro/igor/archive/refs/heads/main.zip
-	unzip -o /tmp/igor.latest.zip -d "$HOME/.igor"
+	unzip -o /tmp/igor.latest.zip -d $HOME/.igor
+	mv $HOME/.igor/igor-main/* $HOME/.igor/
+
+	rm -rf $HOME/.igor/igor-main
+	rm -rf $HOME/.igor/.github
 fi
 
-rm "$HOME/.igor/install.sh"
+
+rm $HOME/.igor/install.sh
 
 echo "This script requires sudo permissions to place Igor on the command line path"
 sudo echo "Thank you for granting sudo permissions."

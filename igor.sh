@@ -112,7 +112,7 @@ function validate_igor_home() {
 			log IGOR "In case you are making improvements, restart me in development mode, ${BOLD}igor --develop${RESET}"
 			exit 1
 		else
-			if [[ "${BASH_SOURCE[0]}" != "usr/local/bin/igor" ]]; then
+			if [[ "${BASH_SOURCE[0]}" != "/usr/local/bin/igor" ]]; then
 				log IGOR "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
 				exit 1
 			fi
