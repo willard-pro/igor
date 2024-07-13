@@ -108,7 +108,9 @@ function check_igor_commands() {
 function validate_igor_home() {
 	if [[ -v HOME && $development -eq 0 ]]; then
 		if [[ ! -d "$HOME/.igor" ]]; then
-			install_igor
+			log IGOR "Please complete the installation, by running the install script, ${BOLD}install.sh${RESET}"
+			log IGOR "In case you are making improvements, restart me in development mode, ${BOLD}igor --develop${RESET}"
+			exit 1
 		else
 			if [[ "${BASH_SOURCE[0]}" != "usr/local/bin/igor" ]]; then
 				log IGOR "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
@@ -116,37 +118,6 @@ function validate_igor_home() {
 			fi
 		fi
 	fi	
-}
-
-#
- # Create a symbolic link to /usr/local/bin/igor, such that it can be executed from anywhere
-#
-function install_igor() {
-	log IGOR "I sense that this is the first time you are making use of my services"
-	log IGOR "If you wish to test or improve my services invoke me with ${BOLD}--develop${RESET}"
-	page_prompt_user_continue "May I continue and install my workbench"
-	
-	log IGOR "Creating ${BOLD}~/.igor${RESET} directory which will contain configuration and Igor's projects"
-	mkdir -p "$HOME/.igor"
-	mkdir -p "$HOME/.igor/core"
-	mkdir -p "$HOME/.igor/config"
-	mkdir -p "$HOME/.igor/modules"
-
-	log IGOR "Copying configuration for my workbench"
-	cp -R "./$config_dir" "$HOME/.igor"
-	log IGOR "Copying core tools for my workbench"
-	cp -R "./$core_dir" "$HOME/.igor"
-	log IGOR "Copy over module(s) ${BOLD}module_admin${RESET} to my workbench"
-	cp -R "./$module_dir/modules/module_admin" "$HOME/.igor/modules"
-
-	ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
-
-	log IGOR "I have completed installing and configuring my workbench"
-	log IGOR "Please delete this directory as it is no longer required"
-	log IGOR "Shoud you need me again, just call on my name ${BOLD}/usr/local/bin/igor${RESET}"
-
-	log_phrase
-	exit 0
 }
 
 #

@@ -14,7 +14,7 @@ Why the name Igor, well Igor was the loyal assistent of Dr. Frankenstein and the
 
 # Get Started
 
-Download the installation script and run ..
+Download and execute the installation script as shown in [Install](#Install) and start Igor.
 
 ```
 Usage: igor
@@ -26,14 +26,14 @@ Usage: igor
 Usage: igor [options]
 
 Options:
-  --admin					  	Enables administrative mode
-  --command <module:command>	Invokes a command of from a specified module directly
-  --decrypt <text>           	Decrypts the specified text
-  --develop                 	Enables development mode
-  --encrypt <text>           	Encrypts the specified text
-  --help                    	Show this help message and exit
-  --update                  	Performs a version check and updates if a later version is available
-  --verbose                 	Enable verbose mode
+  --admin                          Enables administrative mode
+  --command <module:command>    Invokes a command of from a specified module directly
+  --decrypt <text>               Decrypts the specified text
+  --develop                     Enables development mode
+  --encrypt <text>               Encrypts the specified text
+  --help                        Show this help message and exit
+  --update                      Performs a version check and updates if a later version is available
+  --verbose                     Enable verbose mode
 
 Examples:
   igor -encrypt MySecr3tPassw0rd
@@ -42,7 +42,7 @@ Examples:
 
 ## Install
 
-Download the script install-igor.sh and execute.
+Download the script [install.sh](https://raw.githubusercontent.com/willard-pro/igor/main/install.sh) and execute.
 
 ```
 curl -o install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x install-igor.sh && ./install-igor.sh
@@ -353,7 +353,6 @@ Enables custom validation to be executed on the input provided by a user to a sp
               "command": "backup_exists ${value:page.main.prompt.database_selected} 'latest'",
               "message": "Unable to reach backup source and/or there is no backup marked latest"
             }          
-
 ```
 
 #### Format
@@ -362,13 +361,9 @@ Enables custom validation to be executed on the input provided by a user to a sp
 
 Selection based prompt provides the user with a list of options to choose from.  The result could either be single selection or a comma seperated list of multiple selections.
 
-
-
 ##### Text
 
 Most basic of prompts,  a simple string input expected from the user.
-
-
 
 ##### Number
 
