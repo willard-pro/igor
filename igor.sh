@@ -25,20 +25,20 @@ function usage() {
 	echo "Usage: igor [options]"
 	echo
 	echo "Options:"
-	echo "  --admin					  Enables administrative mode"
-	echo "  --command module:command  Invokes a command of from a specified module directly"
-	echo "  --develop                 Enables development mode"
-	echo "  --decrypt                 Decrypts the specified text"
-	echo "  --encrypt                 Encrypts the specified text"
-	echo "  --help                    Show this help message and exit"
-	echo "  --update                  Performs a version check and updates if a later version is available"
-	echo "  --verbose                 Enable verbose mode"
+	echo "  --admin					  	Enables administrative mode"
+	echo "  --command <module:command>	Invokes a command of from a specified module directly"
+	echo "  --develop                 	Enables development mode"
+	echo "  --decrypt <text>           	Decrypts the specified text"
+	echo "  --encrypt <text>           	Encrypts the specified text"
+	echo "  --help                    	Show this help message and exit"
+	echo "  --update                  	Performs a version check and updates if a later version is available"
+	echo "  --verbose                 	Enable verbose mode"
 	echo
 	echo "Examples:"
 	echo "  igor -encrypt MySecr3tPassw0rd"
 	echo "  igor --command module_admin:create_module 'my_new_module' 'New Module' ~/workspace/igor-modules/my_new_module"
 
-exit 0
+	exit 0
 }
 
 #

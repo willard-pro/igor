@@ -30,7 +30,7 @@
               "command": "${page:create_module}"
             },
             {
-              "name": "Export Module",
+              "name": "Export Environment",
               "value": "export",
               "command": "${page:export_module}"
             }
@@ -113,12 +113,13 @@
       "command": "export_module ${value:prompt.selected_module_export}",
       "prompts": [
         {
-          "label": "Select module to export",
+          "label": "Select module(s) to export",
           "name": "selected_module_export",
-          "options": "${command:get_installed_modules}"
+          "options": "${command:get_installed_modules}",
+          "format": "multi"
         },
         {
-          "label": "Are you sure you want to export module",
+          "label": "Are you sure you want to export module(s)",
           "name": "confirm_module_export",
           "format": "continue"
         }

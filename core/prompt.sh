@@ -8,6 +8,12 @@ function page_prompt_user_options() {
 
     prompt_label=$(replace_values "$prompt_label")
 
+    local sort_options=true
+    local has_sort=$(echo "$prompt" | jq --arg name "$prompt_option" 'has("sort")')
+    if [[ $has_sort == "true" ]]; then
+        sort_options=$(echo "$prompt" | jq --arg name "$prompt_option" '.sort')
+    fi
+
     local is_array=$(echo "$prompt" | jq '.options | type == "array"')
     if [ "$is_array" == "true" ]; then
         local prompt_options_all=$(echo "$prompt" | jq -r '.options[] | .name')
@@ -46,11 +52,14 @@ function page_prompt_user_options() {
             page_prompt_options+=("$prompt_option")
         fi
     done
-    # page_prompt_options+=("Exit")
 
-    local prompt_options_array
-    sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
-    while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
+    local prompt_options_array=()
+    if $sort_options; then
+        sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
+        while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
+    else 
+        prompt_options_array=("${page_prompt_options[@]}")
+    fi
 
     prompt_options_length=${#page_prompt_options[@]}
     if [ $prompt_options_length -eq 0 ]; then
@@ -61,7 +70,7 @@ function page_prompt_user_options() {
         local selected_prompt_option=$(echo $prompt | jq -r --arg selected "$prompt_option" '.options[] | select (.name == $selected) | .value')
         prompt_result="$selected_prompt_option"
 
-        log IGOR "For ${BOLD}$prompt_label${RESET}, the only option available is ${BOLD}${prompt_option}${RESET}, selected by default"
+        log IGOR "For ${BOLD}$prompt_label${RESET}, the only option available is ${BOLD}${prompt_option}${RESET}, ${YELLOW}selected by default${RESET}"
     else
         PS3="$prompt_label: "
         select prompt_option in "${prompt_options_array[@]}"; do

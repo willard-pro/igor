@@ -1,4 +1,29 @@
 
+#
+ # Makes use of the hash found in the environment file and uses 
+ # openssl to encrypt the provided text
+#
+function encrypt() {
+    local input_string="$1"
+
+    local hash=$(jq -r '.hash' "$env_file")
+
+    echo "$input_string" | openssl enc -aes-256-cbc -pbkdf2 -a -salt -pass pass:"$hash" | sed ':a;N;$!ba;s/\n/\\n/g'
+}
+
+#
+ # Makes use of the hash found in the environment file and uses 
+ # openssl to decrypt the provided text
+#
+function decrypt() {
+    local input_string="$1"
+
+    local hash=$(jq -r '.hash' "$env_file")
+
+    echo "$input_string" | openssl enc -aes-256-cbc -pbkdf2 -d -a -salt -pass pass:"$hash"
+}
+
+
 function environment_get() {
     echo "$igor_environment"
 }
