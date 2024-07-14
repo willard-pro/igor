@@ -26,9 +26,9 @@ fi
 
 rm $HOME/.igor/install.sh
 
-echo "This script requires sudo permissions to place Igor on the command line path"
+echo -e "\e[33mThis script requires sudo permissions to make Igor availabl on the command line path\e[0m"
 sudo echo "Thank you for granting sudo permissions."
 
 sudo ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
 
-echo "Igor is now installed and available on the CLI.  Type igor and hit enter to get started."
+echo -e "Igor is now installed and available on the CLI.  Type \e[1migor\e[0m and hit enter to get started."
