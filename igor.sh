@@ -434,6 +434,10 @@ function display_environments() {
 
 pre_process_arguments "$@"
 
+if [[ development -eq 0 ]]; then
+	cd "$HOME/.igor" || exit
+fi
+
 #
  # Loads each bash script found in ./lib
  # These are bash scripts which wil be available by default for commands
