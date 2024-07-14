@@ -13,6 +13,8 @@ function create_module() {
 
 	mkdir "$modules_dir/$module_name"
 	mkdir "$module_workspace/$module_name"
+	echo "1.0.0-SNAPSHOT" > "$module_workspace/$module_name/version.txt"
+	
 	cp "$config_dir/module_config_template.json" "$config_file"
 
     sed -i "s/\$name/$module_name/g" $config_file

@@ -134,9 +134,8 @@ function update_igor() {
 		mkdir -p "$download_dir"
 	fi
 
-	# curl -o "$download_dir/version.txt" -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
-	# local remote_version=$(cat "$download_dir/version.txt")
-	local remote_version="1.0.0-SNAPSHOT"
+	curl -o "$download_dir/version.txt" -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
+	local remote_version=$(cat "$download_dir/version.txt")
 	local igor_version=$(cat version.txt)
 
 	local version_result=$("$commands_dir/semver.sh" compare "$remote_version" "$igor_version")
@@ -145,8 +144,7 @@ function update_igor() {
 		echo
 		page_prompt_user_continue "May I continue and install the new version"
 
-		# curl -o "$download_dir/igor-$remote_version.zip" -LOJ https://github.com/exampleuser/willard-pro/igor/archive/refs/heads/main.zip
-		# unzip -o "$download_dir/igor-$remote_version.zip" -d "$HOME/.igor"
+		curl -o /tmp/install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x /tmp/install-igor.sh && /tmp/install-igor.sh
 
 		log IGOR "Sucessfully updated to version $remote_version"
 	else 

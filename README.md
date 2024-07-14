@@ -339,9 +339,11 @@ Making use of **eval** simple if statements are supported with combition of prom
 **NOTE:**   **Commands** need to return 0 for success and 1 for failure.
 
 ```json
-    "condition": "${command:is_valid_git_dir}"
-    "condition": "${value:page.main.prompt.action} == 'install'"
-    "condition": "${value:page.main.prompt.size} > 100"
+{
+  "condition": "${command:is_valid_git_dir}",
+  "condition": "${value:page.main.prompt.action} == 'install'",
+  "condition": "${value:page.main.prompt.size} > 100"
+}
 ```
 
 #### Validate
@@ -349,10 +351,11 @@ Making use of **eval** simple if statements are supported with combition of prom
 Enables custom validation to be executed on the input provided by a user to a specified prompt.
 
 ```json
-          "validate": {
-              "command": "backup_exists ${value:page.main.prompt.database_selected} 'latest'",
-              "message": "Unable to reach backup source and/or there is no backup marked latest"
-            }          
+{
+  "validate": {
+    "command": "backup_exists ${value:page.main.prompt.database_selected} 'latest'",
+    "message": "Unable to reach backup source and/or there is no backup marked latest"
+}          
 ```
 
 #### Format
