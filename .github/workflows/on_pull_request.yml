@@ -1,0 +1,52 @@
+name: Merged Branch
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ develop, master ]
+
+jobs:
+  merged_feature_into_develop:
+    if: github.event.pull_request.merged == true && github.base_ref == 'develop' && startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Increment minor version
+        run: |
+          VERSION=$(cat version.txt)
+          NEW_VERSION=$(commands/semver.sh bump minor "$VERSION")
+          echo "$NEW_VERSION-SNAPSHOT" > version.txt
+      - name: Push new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: New feature merged and minor version bumped
+          branch: ${{ github.base_ref }}
+
+  merged_develop_into_master:
+    if: github.event.pull_request.merged == true && github.base_ref == 'master' && github.head_ref == 'develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Drop snapshot
+        run: |
+          VERSION=$(cat version.txt)
+          NEW_VERSION="${VERSION%-SNAPSHOT}"
+          echo "$NEW_VERSION" version.txt          
+      - name: Push new version
+        id: push_new_version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: New features merged
+          branch: ${{ github.base_ref }}
+      - name: Push tag
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ env.project_version}}
+          commit_sha: ${{ steps.push_new_version.outputs.commit_hash }}
