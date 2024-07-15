@@ -147,7 +147,7 @@ function sort_array_alpha_numeric() {
 
 #
  # array=( "11" "4" "5" )
- # sort_array_alpha_numeric "${array[@]}"
+ # sort_array_numeric "${array[@]}"
  # 
  # result: ( "4" "5" "11")
 #
@@ -181,7 +181,9 @@ sort_array_numeric_and_remove_index() {
     echo "$sorted_array"
 }
 
-
+#
+ # Prints the contents of the file provided in the font color specified
+# 
 function print_banner() {
     local filename=$1
     local font_color=$2
@@ -230,8 +232,17 @@ function print_box() {
     printf "═%.0s" $(seq 1 $((box_width - 2)))
     printf "╗\n"
 
-  # Iterate over the keys and values of the associative array
+    local keys=()
     for key in "${!key_value_pairs[@]}"; do
+        keys+=($key)
+    done
+
+    local key_array=()
+    local sorted_keys=$(sort_array "${keys[@]}")
+    while IFS= read -r line; do key_array+=("$line"); done <<< "$sorted_keys"
+
+  # Iterate over the keys and values of the associative array
+    for key in "${key_array[@]}"; do
         local value="${key_value_pairs[$key]}"
         printf "║ %-${key_value_width}s ║\n" "$key: $value"
     done
@@ -256,4 +267,39 @@ function read_array() {
     done <<< "$text"    
 
     echo "${array[@]}"
+}
+
+# Function to detect OS
+detect_os() {
+    local os="unknown"
+
+    if [ -f /etc/os-release ]; then
+        # Freedesktop.org and systemd
+        . /etc/os-release
+        os=$NAME
+    elif type lsb_release >/dev/null 2>&1; then
+        # linuxbase.org
+        os=$(lsb_release -si)
+    elif [ -f /etc/lsb-release ]; then
+        # For some versions of Debian/Ubuntu without lsb_release command
+        . /etc/lsb-release
+        os=$DISTRIB_ID
+    elif [ -f /etc/debian_version ]; then
+        # Older Debian/Ubuntu/etc.
+        os=Debian
+    elif [ -f /etc/redhat-release ]; then
+        # Red Hat, CentOS, etc.
+        os=$(cat /etc/redhat-release)
+    elif [ "$(uname)" = "Darwin" ]; then
+        # macOS
+        os=macOS
+    elif [ "$(uname -o)" = "Msys" ] || [ "$(uname -o)" = "MINGW32_NT" ] || [ "$(uname -o)" = "MINGW64_NT" ]; then
+        # Git Bash on Windows (Msys or Mingw)
+        os=GitBashOnWindows
+    else
+        # Fall back to generic Unix name
+        os=$(uname -s)
+    fi
+
+    echo "$os"
 }

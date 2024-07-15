@@ -3,7 +3,7 @@ name: Merged Branch
 on:
   pull_request:
     types: [closed]
-    branches: [ develop, master ]
+    branches: [ develop, main ]
 
 jobs:
   merged_feature_into_develop:
@@ -25,8 +25,8 @@ jobs:
           commit_message: New feature merged and minor version bumped
           branch: ${{ github.base_ref }}
 
-  merged_develop_into_master:
-    if: github.event.pull_request.merged == true && github.base_ref == 'master' && github.head_ref == 'develop'
+  merged_develop_into_main:
+    if: github.event.pull_request.merged == true && github.base_ref == 'main' && github.head_ref == 'develop'
     runs-on: ubuntu-latest
 
     steps:

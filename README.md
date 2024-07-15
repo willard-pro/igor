@@ -12,6 +12,16 @@ Hence the birth of __Igor__.  A means to provide a bash prompt based framework w
 
 Why the name Igor, well Igor was the loyal assistent of Dr. Frankenstein and the view is that Igor will assist you too.
 
+## Compatable
+
+Igor is compatable on the following operating systems
+
+| OS      | Shell    | Version |
+| ------- | -------- | ------- |
+| Linux   | GNU Bash | 5.1.16+ |
+| macOS   | Git Bash |         |
+| Windows | Git Bash |         |
+
 # Get Started
 
 Download and execute the installation script as shown in [Install](#Install) and start Igor.
@@ -425,3 +435,7 @@ env -i /bin/bash -c "/bin/bash ..."
 Consits of code which drives the Igor engine, in summary the bash scripts responsible for generating the prompts and execute the scripts fo different modules.
 
 # Reserved
+
+# External Links
+
+1. [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/index.html#SEC_Contents)

@@ -145,7 +145,11 @@
         {
           "label": "Provide the path to the module(s) source",
           "name": "module_package_source",
-          "format": "zip"
+          "format": "file",
+          "validate": {
+            "command": "is_zip_file ${value:prompt.this}",
+            "message": "Invalid archive"  
+          }
         }
       ]
     },
