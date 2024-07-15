@@ -165,6 +165,7 @@ function logo_and_banner() {
 	declare -A box_key_values
 	box_key_values["Environment"]=$(jq -r --arg name "$igor_environment" '.environment[] | select(.name == $name) | .label' "$config_dir/default.json")
 	box_key_values["Version"]=$(cat version.txt)
+	box_key_values["OS"]=$(detect_os)
 
 	print_banner "$config_dir/banner/igor.txt" $igor_banner_color
 	print_box box_key_values 

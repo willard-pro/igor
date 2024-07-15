@@ -244,10 +244,8 @@ function page_prompt_user_text() {
 
     while true; do
         read -r -p "$prompt_label: " response
-        
-        validate_page_prompt
 
-        if [ $? -eq 0 ]; then
+        if valid_page_prompt "$response"; then        
             prompt_result=$response
             break
         fi
@@ -264,8 +262,10 @@ function page_prompt_user_number() {
         read -r -p "$prompt_label: " response
 
         if is_number "$response"; then
-            prompt_result=$response
-            break
+            if valid_page_prompt "$response"; then
+                prompt_result=$response
+                break
+            fi
         else
             log ERROR "Invalid input. Please enter a number."
         fi                
@@ -280,8 +280,10 @@ function page_prompt_user_directory() {
         read -r -p "$prompt_label: " response
 
         if is_dir "$response"; then
-            prompt_result=$response
-            break
+            if valid_page_prompt "$response"; then
+                prompt_result=$response
+                break
+            fi
         else
             log ERROR "Invalid input. Please enter a valid directory."
         fi                
@@ -295,15 +297,16 @@ function page_prompt_user_file() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if is_file "$response"; then
-            prompt_result=$response
-            break
+        if is_file "$response"; then            
+            if valid_page_prompt "$response"; then
+                prompt_result=$response
+                break
+            fi
         else
             log ERROR "Invalid input. Please enter a valid file path."
         fi                
     done
 }
-
 
 function page_prompt_user_date() {
     local prompt_label="$1"
@@ -313,8 +316,10 @@ function page_prompt_user_date() {
         read -r -p "$prompt_label ($prompt_format):" response
 
         if is_date "$response"; then
-            prompt_result=$response
-            break
+            if valid_page_prompt "$response"; then
+                prompt_result=$response
+                break
+            fi
         else
             log ERROR "Invalid input. Please enter a date in the format ${BOLD}$prompt_format${RESET}."
         fi                
@@ -322,8 +327,9 @@ function page_prompt_user_date() {
 }
 
 
-function validate_page_prompt() {    
-    local has_validation=$(echo "$prompt" | jq 'has("validate")')
+function valid_page_prompt() {
+    local prompt_response="$1"
+    local has_validation=$(echo "$prompt" | jq 'has("validate")')   
 
     if [[ $has_validation == "true" ]]; then
         local validate_command=$(echo "$prompt" | jq -r '.validate.command')
@@ -337,7 +343,7 @@ function validate_page_prompt() {
             validate_command="${validate_command:1}"
         fi
 
-        local command_arguments=$(get_arguments "$validate_command")
+        local command_arguments=$(get_arguments "${validate_command/\$\{value:prompt.this\}/$prompt_response}")
         local command_only="${validate_command%% *}"
 
         run_command "$module_name" "$command_only" ${command_arguments[@]}
@@ -346,7 +352,8 @@ function validate_page_prompt() {
         local command_validate_result=$(( not_command ^ command_validate_exit_value))
 
         if [  $command_validate_result -ne 0 ]; then
-            log IGOR "$validate_message"
+            log ERROR "$validate_message"
+            return 1
         fi
     fi
 

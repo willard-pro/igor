@@ -4,7 +4,7 @@ modules_dir="modules"
 
 env_file="$config_dir/env.json"
 
-function install_module() {
+function install_module() {	
 	local install_type="$1"
 	local module_path="$2"
 
@@ -72,6 +72,9 @@ function install_module_from_zip() {
 
 	local tmp_dir=$(mktemp -d)
 	unzip "$zip" -d "$tmp_dir"
+
+log TRACE "$tmp_dir"
+	exit 1
 
 	if [ ! -f "$tmp_dir/config.json" ]; then
 		install_module_from_dir "$tmp_dir"
