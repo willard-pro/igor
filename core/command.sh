@@ -38,12 +38,13 @@ function run_command() {
 
     cp "$config_dir/command_template.sh" "$command_tmp"
 
+    sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s|\$tmp_dir|$tmp_dir|g" $command_tmp
     sed -i "s|\$env_file|$env_file|g" $command_tmp
     sed -i "s|\$timestamp|$timestamp|g" $command_tmp
     sed -i "s|\$file_store|$file_store|g" $command_tmp
-    sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s/\$development/$development/g" $command_tmp
+    sed -i "s|\$commands_dir|$commands_dir|g" $command_tmp
     sed -i "s/\$igor_environment/$igor_environment/g" $command_tmp
     
 	sed -i "s/\$command/$command/g" $command_tmp

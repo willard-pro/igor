@@ -1,20 +1,19 @@
 #!/bin/bash
 
 debug=$debug
-development=$development
-igor_environment=$igor_environment
-
 tmp_dir=$tmp_dir
 env_file=$env_file
 timestamp=$timestamp
 file_store=$file_store
+development=$development
+commands_dir=$commands_dir
+igor_environment=$igor_environment
 
 source lib/log.sh
 source lib/colors.sh
 source lib/shared_utils.sh
 
 source core/store.sh
-
 source modules/$module/$command.sh
 
 $command $arguments
