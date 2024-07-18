@@ -28,11 +28,6 @@
               "name": "Create Module",
               "value": "create",
               "command": "${page:create_module}"
-            },
-            {
-              "name": "Export Environment",
-              "value": "export",
-              "command": "${page:export_module}"
             }
           ]
         }
@@ -107,24 +102,6 @@
         }
       ]
     },
-    {
-      "name": "export_module",
-      "label": "Export Module",
-      "command": "export_module ${value:prompt.selected_module_export}",
-      "prompts": [
-        {
-          "label": "Select module(s) to export",
-          "name": "selected_module_export",
-          "options": "${command:get_installed_modules}",
-          "format": "multi"
-        },
-        {
-          "label": "Are you sure you want to export module(s)",
-          "name": "confirm_module_export",
-          "format": "continue"
-        }
-      ]
-    },        
     {
       "name": "install_module_dir",
       "label": "Source Directory",
