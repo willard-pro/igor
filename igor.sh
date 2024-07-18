@@ -108,12 +108,12 @@ function check_igor_commands() {
 function validate_igor_home() {
 	if [[ -v HOME && $development -eq 0 ]]; then
 		if [[ ! -d "$HOME/.igor" ]]; then
-			log IGOR "Please complete the installation, by running the install script, ${BOLD}install.sh${RESET}"
-			log IGOR "In case you are making improvements, restart me in development mode, ${BOLD}igor --develop${RESET}"
+			echo -e "Please complete the installation, by running the install script, install.sh"
+			echo -e "In case you are making improvements, restart me in development mode, igor --develop"
 			exit 1
 		else
 			if [[ "${BASH_SOURCE[0]}" != "/usr/local/bin/igor" ]]; then
-				log IGOR "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
+				echo -e "My workbench exists, please call me at ${BOLD}/usr/local/bin/igor${RESET}"
 				exit 1
 			fi
 		fi
@@ -144,7 +144,15 @@ function update_igor() {
 		echo
 		page_prompt_user_continue "May I continue and install the new version"
 
-		curl -o /tmp/install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x /tmp/install-igor.sh && /tmp/install-igor.sh
+		curl -o $download_dir/igor.latest.zip -LOJ https://github.com/willard-pro/igor/archive/refs/heads/main.zip
+		unzip -o $download_dir/igor.latest.zip -d $HOME/.igor
+		mv $HOME/.igor/igor-main/* $HOME/.igor/
+
+		rm -rf $HOME/.igor/.github
+		rm -rf $HOME/.igor/igor-main
+		rm -rf $HOME/.igor/install.sh
+
+		rm $download_dir/igor.latest.zip
 
 		log IGOR "Sucessfully updated to version $remote_version"
 	else 
@@ -433,6 +441,8 @@ function display_environments() {
 
 pre_process_arguments "$@"
 
+validate_igor_home
+
 if [[ development -eq 0 ]]; then
 	cd "$HOME/.igor" || exit
 fi
@@ -453,8 +463,6 @@ for lib_file in "$lib_dir"/*.sh; do
         echo "Warning: Skipping non-readable or non-executable file: $core_file"
     fi
 done
-
-validate_igor_home
 
 create_workspace
 
