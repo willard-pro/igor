@@ -194,7 +194,7 @@ function process_arguments() {
 			    	command="$2"
 			    	shift 2
 
-			    	if [[ "$command" =~ ^[a-zA-Z]+:[a-zA-Z]+$ ]]; then
+			    	if [[ "$command" =~ ^[a-zA-Z_]+:[a-zA-Z_]+$ ]]; then
 			    		if has_command "$command"; then
 					    	run_command_direct "$command" "$@"
 					    	exit 0
@@ -251,9 +251,7 @@ function pre_process_arguments() {
 				admin=1
 				;;
 	    	--command)
-			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
-			    	shift 2
-	            fi		    	
+			    return
 				;;
 	        --develop)
 				development=1

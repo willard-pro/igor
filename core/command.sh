@@ -70,7 +70,7 @@ function run_command_direct() {
     shift
 
     local module_name="${module_command%%:*}"
-    local command_name="${input_string##*:}"
+    local command_name="${module_command##*:}"
 
     run_command "$module_name" "$command_name" "$@"
 }
@@ -134,10 +134,10 @@ function has_command() {
     local module_command="$1"
 
     local module_name="${module_command%%:*}"
-    local command_name="${input_string##*:}"
+    local command_name="${module_command##*:}"
 
-    if [ -d "$$modules_dir/$module_name" ]; then
-        if [ -f "$$modules_dir/$module_name" ]; then
+    if [ -d "$modules_dir/$module_name" ]; then
+        if [ -f "$modules_dir/$module_name/$command_name.sh" ]; then
             return 0
         else 
             log ERROR "Module $module_name has no such command $command_name"
