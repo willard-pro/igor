@@ -5,11 +5,6 @@ if [[ -d .git ]]; then
 	exit 1
 fi
 
-if [[ -d igor.sh ]]; then
-	echo "Igor has already been installed"
-	exit 1
-fi
-
 mkdir "$HOME/.igor"
 
 if [[ -f igor.sh ]]; then
