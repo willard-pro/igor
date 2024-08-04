@@ -78,10 +78,11 @@ function page_prompt_user_options() {
     else
         PS3="$prompt_label: "
         select prompt_option in "${prompt_options_array[@]}"; do
-            if [[ "$REPLY" == "0" ]]; then
+            if [[ "$REPLY" == "$back_prompt_result" ]]; then
                 prompt_result="\${page:back}"
                 break
-            elif [[ "$REPLY" == "#"  ]]; then
+            elif [[ "$REPLY" == "exit_prompt_result"  ]]; then
+                log_phrase
                 exit 1
             elif [[ "$prompt_format" == "multi" && "$REPLY" =~ ^([0-9]+,)*[0-9]+$ ]]; then
                 local prompt_selections
@@ -137,7 +138,7 @@ function page_prompt_user_question() {
             page_prompt_user_number "$prompt_label"
             ;;
         "yN")
-            page_prompt_user_yn "$prompt_label"
+            page_prompt_user_yN "$prompt_label"
             ;;
         "Yn")
             page_prompt_user_Yn "$prompt_label"
@@ -170,7 +171,7 @@ function page_prompt_user_question() {
 # ####
 # Function will place selected response in variable prompt_result  
 # ####
-function page_prompt_user_yn() {
+function page_prompt_user_yN() {
     local prompt_label=$1
 
     prompt_label="${prompt_label} [y/N]"
@@ -178,16 +179,20 @@ function page_prompt_user_yn() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if [ -z "$response" ]; then
-            response="n"
-        fi
-
-        if is_yn "$response"; then
-            prompt_result="${response,,}"
+        if is_prompt_back_or_exit "$response"; then
             break
-        else
-            log ERROR "Invalid input. Please enter either y for yes or n for no."
-        fi                
+        else 
+            if [ -z "$response" ]; then
+                response="n"
+            fi
+
+            if is_yn "$response"; then
+                prompt_result="${response,,}"
+                break
+            else
+                log ERROR "Invalid input. Please enter either y for yes or n for no."
+            fi
+        fi
     done
 }
 
@@ -199,16 +204,20 @@ function page_prompt_user_Yn() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if [ -z "$response" ]; then
-            response="y"
-        fi
-
-        if is_yn "$response"; then
-            prompt_result="${response,,}"
+        if is_prompt_back_or_exit "$response"; then
             break
-        else
-            log ERROR "Invalid input. Please enter either y for yes or n for no."
-        fi                
+        else 
+            if [ -z "$response" ]; then
+                response="y"
+            fi
+
+            if is_yn "$response"; then
+                prompt_result="${response,,}"
+                break
+            else
+                log ERROR "Invalid input. Please enter either y for yes or n for no."
+            fi                
+        fi
     done
 }
 
@@ -219,7 +228,7 @@ function page_prompt_user_Yn() {
 function page_prompt_user_continue() {
     local prompt_label=$1
     
-    page_prompt_user_yn "$prompt_label"
+    page_prompt_user_yN "$prompt_label"
 
     if [[ "$prompt_result" =~ ^[nN]$ ]]; then
         log_phrase
@@ -233,6 +242,7 @@ function page_prompt_user_exit() {
     echo "$prompt_label"
     read -n 1 -s
     log_phrase
+
     exit 0
 }
 
@@ -245,7 +255,9 @@ function page_prompt_user_text() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if valid_page_prompt "$response"; then        
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif valid_page_prompt "$response"; then        
             prompt_result=$response
             break
         fi
@@ -261,7 +273,9 @@ function page_prompt_user_number() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if is_number "$response"; then
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif is_number "$response"; then
             if valid_page_prompt "$response"; then
                 prompt_result=$response
                 break
@@ -279,7 +293,9 @@ function page_prompt_user_directory() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if is_dir "$response"; then
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif is_dir "$response"; then
             if valid_page_prompt "$response"; then
                 prompt_result=$response
                 break
@@ -297,7 +313,9 @@ function page_prompt_user_file() {
     while true; do
         read -r -p "$prompt_label: " response
 
-        if is_file "$response"; then            
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif is_file "$response"; then            
             if valid_page_prompt "$response"; then
                 prompt_result=$response
                 break
@@ -315,7 +333,9 @@ function page_prompt_user_date() {
     while true; do
         read -r -p "$prompt_label ($prompt_format):" response
 
-        if is_date "$response"; then
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif is_date "$response"; then
             if valid_page_prompt "$response"; then
                 prompt_result=$response
                 break
@@ -430,6 +450,23 @@ function condition_page_prompt() {
     fi
 
     return 0
+}
+
+#
+ # Function to check if the user has entered either back or exit
+# 
+function is_prompt_back_or_exit() {
+    local prompt_response="$1"
+
+    if [[ "$prompt_response" == "$back_prompt_result" ]]; then
+        prompt_result="\${page:back}"
+        return 0
+    elif [[ "$prompt_response" == "exit_prompt_result"  ]]; then
+        log_phrase
+        exit 0
+    fi
+
+    return 1
 }
 
 # Function to check if input is an integer

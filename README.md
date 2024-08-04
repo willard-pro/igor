@@ -8,7 +8,7 @@ Igor is compatable on the following Linux based distros and Git Bash.
 
 # Get Started
 
-Before you install have a look at the ??? video.
+Before you install have a look at the [Introduction video](https://youtu.be/uFeFbcVmWIE).
 
 ## Install
 

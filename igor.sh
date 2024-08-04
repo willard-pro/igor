@@ -321,7 +321,7 @@ function display_modules() {
 
 	    		log INFO "Copy experimental module from $module_workspace/$module_name"
 
-	    		cp $module_workspace/$module_name/* $modules_dir/$module_name
+	    		cp -R $module_workspace/$module_name/* $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
