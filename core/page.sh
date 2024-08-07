@@ -93,9 +93,14 @@ function page_prompts() {
                 if [[ $has_format == "true" ]]; then
                     page_prompt_user_question
 
-                    local has_command=$(echo "$prompt" | jq 'has("command")')
-                    if [[ $has_command == "true" ]]; then
-                        local prompt_command=$(echo "$prompt" | jq '.command')
+                    if [[ "$prompt_result" == "\${page:back}" ]]; then
+                        page_command="$prompt_result"
+                        break
+                    else
+                        local has_command=$(echo "$prompt" | jq 'has("command")')
+                        if [[ $has_command == "true" ]]; then
+                            local prompt_command=$(echo "$prompt" | jq '.command')
+                        fi
                     fi
                 fi
             fi

@@ -1,24 +1,18 @@
 # Igor
 
-## Goal
-
-Easy to use CLI tool, which presents functionality to the user in the form of a menu and prompts, which requests input from the user for a script to execute, using only bash, mostly.  
+Easy to use CLI tool, which presents functionality to the user in the form of a menu and prompts, which requests input from the user for a script to execute, using only bash, mostly.  Those interested in the origins of Igor, please feel free to visit the [About](https://github.com/willard-pro/igor/wiki) wiki page.
 
 ## Compatable
 
-Igor is compatable on the following operating systems
-
-| OS      | Shell    | Version |
-| ------- | -------- | ------- |
-| Linux   | GNU Bash | 5.1.16+ |
-| macOS   | Git Bash |         |
-| Windows | Git Bash |         |
+Igor is compatable on the following Linux based distros and Git Bash.
 
 # Get Started
 
+Before you install have a look at the [Introduction video](https://youtu.be/uFeFbcVmWIE).
+
 ## Install
 
-Download and install the script [install.sh](https://raw.githubusercontent.com/willard-pro/igor/main/install.sh).
+Download and install the script [install.sh](https://raw.githubusercontent.com/willard-pro/igor/main/install.sh).  The snippet, below will download and execute the installation script.
 
 ```
 curl -o install-igor.sh https://raw.githubusercontent.com/willard-pro/igor/main/install.sh && chmod +x install-igor.sh && ./install-igor.sh
@@ -46,23 +40,15 @@ and many more features, which are described in detail on the wiki page, [Usage](
 
 ## Modules
 
-Igor provides functionality to you the user by installed modules.  
+Igor provides functionality to you the user by means of modules.  A module is a package of related functions.
 
-### Public
+### Official
 
 Modules made available to the public can be obtain from the [official Igor modules repository](https://github.com/willard-pro/igor-modules). See the wiki page, [Modules](https://github.com/willard-pro/igor/wiki/Modules) on how to install modules.
 
 ### Custom
 
 You may wish to create custom modules and store them within a private repository.  Before creating a new module, read the [Advanced](https://github.com/willard-pro/igor/wiki/Advanced) wiki page to gain insight on syntax and development features available.
-
-
-
-
-
-
-
-
 
 # External Links
 

@@ -47,6 +47,10 @@
 			{
 				"command": "sed",
 				"message": "${YELLOW} ${BOLD}sed${RESET} command not found. Please install sed and try again${RESET}."
+			},
+			{
+				"command": "liquibase",
+				"message": "${YELLOW} ${BOLD}liquibase${RESET} command not found. Please install liquibase (https://docs.liquibase.com/start/install/home.html) and try again${RESET}."
 			}
 		]
 	}
