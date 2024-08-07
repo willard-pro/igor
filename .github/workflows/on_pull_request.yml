@@ -29,6 +29,12 @@ jobs:
     if: github.event.pull_request.merged == true && github.base_ref == 'main' && github.head_ref == 'develop'
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+      deployments: write
+      
     steps:
       - uses: actions/checkout@v2
         with:
