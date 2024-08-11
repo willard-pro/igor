@@ -15,6 +15,9 @@ function install_module() {
 	    "zip")
 			install_module_from_zip "$module_path"
 	        ;;
+	    "url")
+			install_module_from_url "$module_path"
+	        ;;
 	esac
 }
 
@@ -80,7 +83,6 @@ function install_module_from_dir() {
 	fi	
 }
 
-
 function install_module_from_zip() {
  	local zip="$1"
 
@@ -95,6 +97,16 @@ function install_module_from_zip() {
 
 	rm -rf "$unzip_dir"
 }
+
+function install_module_from_url() {
+ 	local url="$1"
+
+ 	local download=$(mktemp -d "$tmp_dir/url.XXXXXX")
+ 	curl -o "$download" "$url"
+
+ 	install_module_from_zip "$download"
+}
+
 
 function valid_module() {
   local module_path="$1"
