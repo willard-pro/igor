@@ -1,5 +1,6 @@
 
 env.json
+env_dev.json
 
 tmp/
 modules/*

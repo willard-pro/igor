@@ -55,7 +55,9 @@ function create_environment() {
 	jq --arg name "$hash" '. + { "hash":  $name }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
-	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"	
+	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+
+	cp "$env_file" "$config_dir/env_dev.json"
 }
 
 #
@@ -266,6 +268,7 @@ function pre_process_arguments() {
 				;;
 	        --develop)
 				development=1
+				env_file="$config_dir/env_dev.json"
 				;;
 			--decrypt)
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
@@ -309,25 +312,19 @@ function display_modules() {
 	for module_name in $module_names; do
 		log DEBUG "Scanning $module_name"
 
-		local skip
+		local skip=0
 		if [[ $admin -eq 0 && "$module_name" == "module_admin" ]] || [[ $admin -ne 0 && "$module_name" != "module_admin" ]]; then
 		    skip=1
-		else
-		    skip=0
 		fi
 
 	    if [[ skip -eq 0 ]]; then
-	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
-	    		mkdir $modules_dir/$module_name
-	    	fi
-
 	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
 	    		log INFO "Copy experimental module from $module_workspace/$module_name"
 
-	    		cp -R $module_workspace/$module_name/* $modules_dir/$module_name
+	    		ln -s $module_workspace/$module_name $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
