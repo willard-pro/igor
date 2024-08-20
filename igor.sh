@@ -322,8 +322,12 @@ function display_modules() {
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	    		log INFO "Copy experimental module from $module_workspace/$module_name"
+	    		log INFO "Linking experimental module from $module_workspace/$module_name"
 
+	    		if [[ -L $modules_dir/$module_name  ]]; then
+	    			rm $modules_dir/$module_name
+	    		fi
+	    		
 	    		ln -s $module_workspace/$module_name $modules_dir/$module_name
 	    	fi
 
