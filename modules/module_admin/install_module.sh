@@ -45,38 +45,39 @@ function install_module_from_dir() {
 
 		log INFO "Installing module ${BOLD}$module_label${RESET} from ${BOLD}$module_path${RESET}"
 
-		if [ -d "$modules_dir/$module_name" ]; then
-			local version_exising_moule=$(cat "$modules_dir/$module_name/version.txt")
+		local version_result=1
+		jq -e --arg name "$module_name" '.modules[] | select(.name == $name)' "$env_file" > /dev/null
+		if [ $? -ne 0 ]; then
+			local version_exising_module=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' "$env_file")
 
-			local version_result=$("$commands_dir/semver.sh" compare "$version_new_module" "$version_exising_moule")
+			local version_result=$("$commands_dir/semver.sh" compare "$version_new_module" "$version_exising_module")
 			if [ $version_result -eq 0 ]; then
-				log IGOR "Version ${BOLD}$version_exising_moule${RESET} of module ${BOLD}$module_label${RESET} already installed, ${YELLOW}skipped...${RESET}"
+				log IGOR "Version ${BOLD}$version_exising_module${RESET} of module ${BOLD}$module_label${RESET} already installed, ${YELLOW}skipped...${RESET}"
 				return 
 			else
 				if [ $version_result -eq -1 ]; then
-					log INFO "${YELLOW}Downgrading ${BOLD}$version_exising_moule${RESET}${YELLOW} to ${BOLD}$version_new_module${RESET} of module ${BOLD}$module_label${RESET}"	
+					log INFO "${YELLOW}Downgrading ${BOLD}$version_exising_module${RESET}${YELLOW} to ${BOLD}$version_new_module${RESET} of module ${BOLD}$module_label${RESET}"	
 				fi
-
-				log INFO "Backing up version of ${BOLD}$version_exising_moule${RESET} of ${BOLD}$module_label${RESET} found to ${BOLD}$modules_dir/${module_name}_$version_exising_moule${RESET}"
-
-				mv "$modules_dir/$module_name" "$modules_dir/${module_name}_${version_exising_moule}"
 			fi
 		fi
 
-		mkdir "$modules_dir/$module_name"
-		cp -R "$module_path"/* "$modules_dir/$module_name"
+		if [ $version_result -ne 0 ]; then
+			mkdir "$modules_dir/$module_name@${version_new_module}"
+			cp -R "$module_path"/* "$modules_dir/$module_name@${version_new_module}"
 
-		jq -e --arg name "$module_name" '.modules[] | select(.name == $name)' "$env_file" > /dev/null
-		if [ $? -ne 0 ]; then
-			local is_configurable=$(jq -r '.module.configurable' "$module_path/config.json")
-			if [ "$is_configurable" = "true" ]; then
-			    is_configurable="false"
-			elif [ "$is_configurable" = "false" ]; then
-			    is_configurable="true"
-			fi
+			if [ $version_result -eq 1 ]; then
+				local is_configurable=$(jq -r '.module.configurable' "$module_path/config.json")
+				if [ "$is_configurable" = "true" ]; then
+				    is_configurable="false"
+				elif [ "$is_configurable" = "false" ]; then
+				    is_configurable="true"
+				fi
 
-			local new_module=$(jq -n --arg name "$module_name" --arg configured "$is_configurable" '{ "name": $name, "configured": $configured }')
-			jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+				local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$is_configurable" '{ "name": $name, "version": "$version", configured": $configured }')
+				jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+			else
+				jq --arg name "$module_name" --arg version "$version_new_module" '.modules[] |= if .name == $name then .version = $version else . end' input.json
+			fi			
 		fi
 
 		log IGOR "Version ${BOLD}$version_new_module${RESET} of module ${BOLD}$module_label${RESET} installed"

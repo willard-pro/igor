@@ -318,17 +318,19 @@ function display_modules() {
 		fi
 
 	    if [[ skip -eq 0 ]]; then
+    		if [[ -L $modules_dir/$module_name  ]]; then
+    			rm $modules_dir/$module_name
+    		fi
+
 	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
 	    		log INFO "Linking experimental module from $module_workspace/$module_name"
-
-	    		if [[ -L $modules_dir/$module_name  ]]; then
-	    			rm $modules_dir/$module_name
-	    		fi
-	    		
 	    		ln -s $module_workspace/$module_name $modules_dir/$module_name
+	    	else
+		    	local module_version=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
+		    	ln -s "$module_workspace/$module_name@$module_version" $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
