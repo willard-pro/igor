@@ -2,6 +2,7 @@
 
 admin=0
 debug=0
+enhancement=0
 development=0
 igor_environment="unknown"
 
@@ -106,10 +107,10 @@ function check_igor_commands() {
  # If not installed it will install and/or upgrade Igor into ~/.igor
 #
 function validate_igor_home() {
-	if [[ -v HOME && $development -eq 0 ]]; then
+	if [[ -v HOME && $enhancement -eq 0 ]]; then
 		if [[ ! -d "$HOME/.igor" ]]; then
 			echo -e "Please complete the installation, by running the install script, install.sh"
-			echo -e "In case you are making improvements, restart me in development mode, igor --develop"
+			echo -e "In case you are making improvements, restart me in enhance mode, igor --develop"
 			exit 1
 		else
 			if [[ "${BASH_SOURCE[0]}" != "/usr/local/bin/igor" ]]; then
@@ -195,6 +196,8 @@ function process_arguments() {
 				;;
 	        --develop)
 				;;
+			--enhance)
+				;;
 			--help)
 				;;	    	
 			--command)
@@ -273,6 +276,9 @@ function pre_process_arguments() {
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
 			    	shift 2
 	            fi		    	
+				;;
+			--enhance)
+				enhancement=1
 				;;
 			--help)
 				usage
@@ -443,7 +449,7 @@ pre_process_arguments "$@"
 
 validate_igor_home
 
-if [[ development -eq 0 ]]; then
+if [[ "$enhancement" -eq 0 ]]; then
 	cd "$HOME/.igor" || exit
 fi
 
@@ -485,7 +491,7 @@ done
 
 check_igor_commands
 
-if [[ development -eq 1 ]]; then
+if [[ "$development" -eq 1 || "$enhancement" -eq 1 ]]; then
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"
