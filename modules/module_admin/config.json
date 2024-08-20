@@ -17,7 +17,8 @@
             {
               "name": "Install Module",
               "value": "install",
-              "command": "${page:install_module}"
+              "command": "${page:install_module}",
+              "condition": "!${command:is_development_mode}"
             },
             {
               "name": "Remove Module",
@@ -27,12 +28,14 @@
             {
               "name": "Create Module",
               "value": "create",
-              "command": "${page:create_module}"
+              "command": "${page:create_module}",
+              "condition": "${command:is_development_mode}"
             },
             {
               "name": "Modify Module",
               "value": "modify",
-              "command": "${page:modify_module}"
+              "command": "${page:modify_module}",
+              "condition": "${command:is_development_mode}"
             }
           ]
         }
