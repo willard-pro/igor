@@ -326,9 +326,15 @@ function display_modules() {
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	    		log INFO "Linking experimental module from $module_workspace/$module_name"
-	    		ln -s $module_workspace/$module_name $modules_dir/$module_name
-	    	else
+	    		log INFO "Validating module from $module_workspace/$module_name"
+	    		run_command "module_admin" "is_valid_module" "$module_workspace/$module_name" 
+	    		if [ $? -eq 0 ]; then
+	    			log INFO "Linking experimental module from $module_workspace/$module_name"
+	    			ln -s $module_workspace/$module_name $modules_dir/$module_name
+	    		else
+	    			log ERROR "Module $module_name failed basic validation, please have a look at the errors"
+	    		fi
+	    	elif [[ "$module_name" != "module_admin" ]]; then
 		    	local module_version=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
 		    	ln -s "$module_workspace/$module_name@$module_version" $modules_dir/$module_name
 	    	fi
@@ -352,8 +358,8 @@ function display_modules() {
 	module_count=${#options[@]}
 
 	if [ $module_count -eq 0 ]; then
-		log IGOR "No modules have been installed and/or created"
-		log IGOR "Invoke administrative mode to add and/or create new modules, by running ${BOLD}${YELLOW}igor --admin${RESET}"
+		log IGOR "No modules have been installed"
+		log IGOR "Invoke administrative mode to install modules, by running ${BOLD}${YELLOW}igor --admin${RESET}"
 		exit 1
 	else 
 #

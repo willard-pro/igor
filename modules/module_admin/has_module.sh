@@ -1,9 +1,4 @@
 
-config_dir="config"
-modules_dir="modules"
-
-env_file="$config_dir/env.json"
-
 function has_module() {
 	local module_search="$1"
 	local value="$1"

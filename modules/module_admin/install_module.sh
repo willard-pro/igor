@@ -1,8 +1,7 @@
 
-config_dir="config"
 modules_dir="modules"
 
-env_file="$config_dir/env.json"
+source modules/module_admin/is_valid_module.sh
 
 function install_module() {	
 	local install_type="$1"
@@ -38,7 +37,7 @@ function install_modules_from_dir() {
 function install_module_from_dir() {
  	local module_path="$1"
 
-	if valid_module "$module_path"; then
+	if is_valid_module "$module_path"; then
 		local version_new_module=$(cat "$module_path/version.txt")
 		local module_name=$(jq -r '.module.name' "$module_path/config.json")
 		local module_label=$(jq -r '.module.name' "$module_path/config.json")
@@ -108,38 +107,3 @@ function install_module_from_url() {
  	install_module_from_zip "$download"
 }
 
-
-function valid_module() {
-  local module_path="$1"
-
-  local config_file="$module_path/config.json"
-
-  log INFO "Validating configuration $config_file"
-
-  # Check if the config.json file exists
-	if [[ ! -f "$config_file" ]]; then
-		log ERROR "Configuration ${BOLD}(config.json)${RESET} missing from $module_path"
-		return 1
-	else
-		# Check if the config.json file is valid JSON
-		if ! jq empty "$config_file" 2>/dev/null; then
-			log ERROR "Configuration ${BOLD}(config.json)${RESET} from $module_path invalid, unable to parse"
-			return 1
-		else
-			if ! jq -e '.pages[] | select(.name == "main")' $config_file >/dev/null; then
-				log ERROR "Configuration ${BOLD}(config.json)${RESET} from $module_path invalid, missing 'main' page"
-				return 1
-			fi
-
-			local is_configurable=$(jq -r '.module.configurable' $config_file)
-			if [ "$is_configurable" == "true" ]; then
-				if ! jq -e '.pages[] | select(.name == "configure")' $config_file > /dev/null; then
-				log ERROR "Configuration ${BOLD}(config.json)${RESET} from $module_name is specified as configurable, missing 'configure' page"
-				return 1
-				fi
-			fi
-		fi
-	fi
-
-  return 0
-}

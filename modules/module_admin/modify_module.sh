@@ -1,10 +1,5 @@
 
-config_dir="config"
-modules_dir="modules"
-
-env_file="$config_dir/env.json"
-
-function improve_module() {
+function modify_module() {
 	local module_name=$1
 	local module_workspace=$2
 

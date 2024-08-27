@@ -1,9 +1,5 @@
 
-
-config_dir="config"
 modules_dir="modules"
-
-env_file="$config_dir/env.json"
 
 function delete_installed_module() {
 	local module_name="$1"

@@ -23,7 +23,8 @@
             {
               "name": "Remove Module",
               "value": "remove",
-              "command": "${page:remove_module}"
+              "command": "${page:remove_module}",
+              "condition": "${command:has_modules}"
             },
             {
               "name": "Create Module",
