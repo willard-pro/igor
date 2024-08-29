@@ -57,8 +57,8 @@
           "name": "module_name",
           "format": "string",
           "validate": {
-              "command": "!has_module name ${value:prompt.module_name}",
-              "message": "A module with name ${value:prompt.module_name} already exists"
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
             }
         },        
         {
@@ -122,8 +122,8 @@
           "name": "module_label",
           "format": "string",
           "validate": {
-              "command": "!has_module label ${value:prompt.module_name}",
-              "message": "A module with label ${value:prompt.module_name} already exists"
+              "command": "!has_module label ${value:prompt.this}",
+              "message": "A module with label ${value:prompt.this} already exists"
             }          
         },
         {
@@ -131,8 +131,8 @@
           "name": "module_name",
           "format": "string",
           "validate": {
-              "command": "!has_module name ${value:prompt.module_name}",
-              "message": "A module with name ${value:prompt.module_name} already exists"
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
             }
         },
         {
