@@ -392,9 +392,8 @@ function valid_page_prompt() {
         local command_validate_exit_value=$?
 
         local command_validate_result=$(( not_command ^ command_validate_exit_value))
-
         if [  $command_validate_result -ne 0 ]; then
-            log ERROR "$validate_message"
+            log ERROR "${validate_message/\$\{value:prompt.this\}/$prompt_response}"
             return 1
         fi
     fi

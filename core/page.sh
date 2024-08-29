@@ -85,7 +85,7 @@ function page_prompts() {
                 else
                     local has_command=$(echo "$prompt" | jq --arg value "$prompt_result" '.options[] | select(.value == $value) | has("command")')
                     if [[ $has_command == "true" ]]; then
-                        local prompt_command=$(echo "$prompt" | jq -r --arg name "$prompt_option" '.options[] | select(.name == $name) | .command')
+                        local prompt_command=$(echo "$prompt" | jq -r --arg value "$prompt_result" '.options[] | select(.value == $value) | .command')
                     fi
                 fi
             else 

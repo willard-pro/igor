@@ -17,22 +17,26 @@
             {
               "name": "Install Module",
               "value": "install",
-              "command": "${page:install_module}"
+              "command": "${page:install_module}",
+              "condition": "!${command:is_development_mode}"
             },
             {
               "name": "Remove Module",
               "value": "remove",
-              "command": "${page:remove_module}"
+              "command": "${page:remove_module}",
+              "condition": "${command:has_modules}"
             },
             {
               "name": "Create Module",
               "value": "create",
-              "command": "${page:create_module}"
+              "command": "${page:create_module}",
+              "condition": "${command:is_development_mode}"
             },
             {
               "name": "Modify Module",
               "value": "modify",
-              "command": "${page:modify_module}"
+              "command": "${page:modify_module}",
+              "condition": "${command:is_development_mode}"
             }
           ]
         }
@@ -41,17 +45,21 @@
     {
       "name": "modify_module",
       "label": "Modify Module",
-      "command": "modify_module ${value:prompt.selected_module_modify} ${value:prompt.module_workspace}",
+      "command": "modify_module ${value:prompt.module_name} ${value:prompt.module_workspace}",
       "prompts": [
-        {
-          "label": "Select module to modify",
-          "name": "selected_module_modify",
-          "options": "${command:get_installed_modules}"
-        },
         {
           "label": "Provide the path to the module source",
           "name": "module_workspace",
           "format": "dir"
+        },
+        {
+          "label": "What is the unique name of the module",
+          "name": "module_name",
+          "format": "string",
+          "validate": {
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
+            }
         },        
         {
           "label": "Are you sure you want to modify module",
@@ -114,8 +122,8 @@
           "name": "module_label",
           "format": "string",
           "validate": {
-              "command": "!has_module label ${value:prompt.module_name}",
-              "message": "A module with label ${value:prompt.module_name} already exists"
+              "command": "!has_module label ${value:prompt.this}",
+              "message": "A module with label ${value:prompt.this} already exists"
             }          
         },
         {
@@ -123,8 +131,8 @@
           "name": "module_name",
           "format": "string",
           "validate": {
-              "command": "!has_module name ${value:prompt.module_name}",
-              "message": "A module with name ${value:prompt.module_name} already exists"
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
             }
         },
         {
