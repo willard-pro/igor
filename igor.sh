@@ -179,6 +179,11 @@ function logo_and_banner() {
 	box_key_values["OS"]=$(detect_os)
 
 	print_banner "$config_dir/banner/igor.txt" $igor_banner_color
+
+	if [[ "$development" -eq 1 || "$enhancement" -eq 1 ]]; then
+		print_banner "$config_dir/banner/linux.txt"
+	fi
+
 	print_box box_key_values 
 }
 
@@ -326,10 +331,10 @@ function display_modules() {
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	    		log INFO "Validating module from $module_workspace/$module_name"
+	    		log INFO "Validating developmental module ${BOLD}$module_name${RESET}"
 	    		run_command "module_admin" "is_valid_module" "$module_workspace/$module_name" 
 	    		if [ $? -eq 0 ]; then
-	    			log INFO "Linking experimental module from $module_workspace/$module_name"
+	    			log INFO "Linking developmental module ${BOLD}$module_name${RESET} from ${BOLD}$module_workspace/$module_name${RESET}"
 	    			ln -s $module_workspace/$module_name $modules_dir/$module_name
 	    		else
 	    			log ERROR "Module $module_name failed basic validation, please have a look at the errors"
