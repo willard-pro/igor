@@ -3,6 +3,8 @@ function has_module() {
 	local module_search="$1"
 	local value="$1"
 
+	log TRACE "$env_file"
+
 	local is_module_present="false"
 	if [[ "$module_search" == "name" ]]; then
 		is_module_present=$(jq --arg name "$value" '[.modules[] | select(.name == $name)] | length > 0' $env_file)
