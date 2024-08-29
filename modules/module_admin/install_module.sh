@@ -46,7 +46,7 @@ function install_module_from_dir() {
 
 		local version_result=1
 		jq -e --arg name "$module_name" '.modules[] | select(.name == $name)' "$env_file" > /dev/null
-		if [ $? -ne 0 ]; then
+		if [ $? -eq 0 ]; then
 			local version_exising_module=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' "$env_file")
 
 			local version_result=$("$commands_dir/semver.sh" compare "$version_new_module" "$version_exising_module")
@@ -72,7 +72,7 @@ function install_module_from_dir() {
 				    is_configurable="true"
 				fi
 
-				local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$is_configurable" '{ "name": $name, "version": "$version", configured": $configured }')
+				local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$is_configurable" '{ "name": $name, "version": $version, "configured": $configured }')
 				jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 			else
 				jq --arg name "$module_name" --arg version "$version_new_module" '.modules[] |= if .name == $name then .version = $version else . end' input.json

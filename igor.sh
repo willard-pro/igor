@@ -340,8 +340,10 @@ function display_modules() {
 	    			log ERROR "Module $module_name failed basic validation, please have a look at the errors"
 	    		fi
 	    	elif [[ "$module_name" != "module_admin" ]]; then
-		    	local module_version=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
-		    	ln -s "$module_workspace/$module_name@$module_version" $modules_dir/$module_name
+	    		log INFO "Linking module ${BOLD}$module_name${RESET}"
+	    		
+		    	local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
+		    	ln -s $module_name@$module_version $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
