@@ -10,16 +10,10 @@ mkdir "$HOME/.igor"
 if [[ -f igor.sh ]]; then
 	cp -R . "$HOME/.igor"
 else
-	curl -o /tmp/igor.latest.zip -LOJ https://github.com/willard-pro/igor/archive/refs/heads/main.zip
+	local latest_version=$(curl -v https://github.com/willard-pro/igor/releases/latest 2>&1 | grep 'location:' | awk -F'tag/' '{print $2}')
+	curl -o /tmp/igor.latest.zip -LOJ https://github.com/willard-pro/igor/releases/download/$latest_version/igor-$latest_version.zip
 	unzip -o /tmp/igor.latest.zip -d $HOME/.igor
-	mv $HOME/.igor/igor-main/* $HOME/.igor/
-
-	rm -rf $HOME/.igor/igor-main
-	rm -rf $HOME/.igor/.github
 fi
-
-
-rm $HOME/.igor/install.sh
 
 echo -e "\e[33mThis script requires sudo permissions to make Igor availabl on the command line path\e[0m"
 sudo echo "Thank you for granting sudo permissions."
