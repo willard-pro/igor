@@ -18,7 +18,6 @@ else
 	rm -rf $HOME/.igor/.github
 fi
 
-
 rm $HOME/.igor/install.sh
 
 echo -e "\e[33mThis script requires sudo permissions to make Igor availabl on the command line path\e[0m"

@@ -58,11 +58,7 @@ jobs:
           custom_tag: ${{ env.igor_version }}
           commit_sha: ${{ steps.push_new_version.outputs.commit_hash }}
       - name: Archive Igor
-        uses: thedoctor0/zip-release@0.7.5
-        with:
-          type: 'zip'
-          filename: 'igor-${{ env.igor_version }}.zip'
-          exclusions: '.gitignore .github .git install.sh'
+        run: zip -r igor-${{ env.igor_version }}.zip . -x ".gitignore" ".github/*" ".git/*" "install.sh"
       - name: Create release
         uses: ncipollo/release-action@v1.12.0
         with:
