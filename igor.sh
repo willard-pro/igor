@@ -144,7 +144,7 @@ function update_igor() {
 	if [ $version_result -eq 1 ]; then
 		log IGOR "New version, $remote_version has been detected"
 		echo
-		page_prompt_user_continue "May I continue and install the new version"
+		page_prompt_user_continue "Would you like to continue and install the new version"
 
 		curl -o $download_dir/igor.latest.zip -LOJ https://github.com/willard-pro/igor/releases/download/$remote_version/igor-$remote_version.zip
 		unzip -o $download_dir/igor.latest.zip -d $HOME/.igor
