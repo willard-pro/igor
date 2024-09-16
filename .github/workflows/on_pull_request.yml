@@ -10,6 +10,9 @@ jobs:
     if: github.event.pull_request.merged == true && github.base_ref == 'develop' && startsWith(github.head_ref, 'feature/')
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write      
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -22,7 +25,29 @@ jobs:
       - name: Push new version
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: New feature merged and minor version bumped
+          commit_message: Bumped minor version (feature)
+          branch: ${{ github.base_ref }}
+
+  merged_bugfix_into_develop:
+    if: github.event.pull_request.merged == true && github.base_ref == 'develop' && startsWith(github.head_ref, 'bugfix/')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write      
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Increment minor version
+        run: |
+          VERSION=$(cat version.txt)
+          NEW_VERSION=$(commands/semver.sh bump patch "$VERSION")
+          echo "$NEW_VERSION-SNAPSHOT" > version.txt
+      - name: Push new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Bumped patch version (bugfix)
           branch: ${{ github.base_ref }}
 
   merged_develop_into_main:
@@ -34,7 +59,7 @@ jobs:
       pull-requests: write
       repository-projects: write
       deployments: write
-      
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -49,7 +74,7 @@ jobs:
         id: push_new_version
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: New features merged
+          commit_message: Dropped snapshot (develop)
           branch: ${{ github.base_ref }}
       - name: Push tag
         uses: mathieudutour/github-tag-action@v6.0
@@ -62,8 +87,9 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: "igor-${{ env.igor_version }}.zip"
+          artifacts: "igor-${{ env.igor_version }}.zip,install.sh"
           artifactErrorsFailBuild: true
           generateReleaseNotes: true
           tag: ${{ env.igor_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+

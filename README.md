@@ -54,3 +54,4 @@ You may wish to create custom modules and store them within a private repository
 
 1. [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/index.html#SEC_Contents)
 2. [Online Bash Shell](https://www.onlinegdb.com/online_bash_shell)
+3. [Regular Expressions 101](https://regex101.com/)
