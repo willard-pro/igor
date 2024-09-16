@@ -2,6 +2,7 @@
 
 admin=0
 debug=0
+enhancement=0
 development=0
 igor_environment="unknown"
 
@@ -54,7 +55,9 @@ function create_environment() {
 	jq --arg name "$hash" '. + { "hash":  $name }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
-	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"	
+	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+
+	cp "$env_file" "$config_dir/env_dev.json"
 }
 
 #
@@ -106,10 +109,10 @@ function check_igor_commands() {
  # If not installed it will install and/or upgrade Igor into ~/.igor
 #
 function validate_igor_home() {
-	if [[ -v HOME && $development -eq 0 ]]; then
+	if [[ -v HOME && $enhancement -eq 0 ]]; then
 		if [[ ! -d "$HOME/.igor" ]]; then
 			echo -e "Please complete the installation, by running the install script, install.sh"
-			echo -e "In case you are making improvements, restart me in development mode, igor --develop"
+			echo -e "In case you are making improvements, restart me in enhance mode, igor --develop"
 			exit 1
 		else
 			if [[ "${BASH_SOURCE[0]}" != "/usr/local/bin/igor" ]]; then
@@ -134,17 +137,16 @@ function update_igor() {
 		mkdir -p "$download_dir"
 	fi
 
-	curl -o "$download_dir/version.txt" -s "https://raw.githubusercontent.com/willard-pro/igor/main/version.txt"
-	local remote_version=$(cat "$download_dir/version.txt")
+	local remote_version=$(curl -v https://github.com/willard-pro/igor/releases/latest 2>&1 | grep 'location:' | awk -F'tag/' '{print $2}')
 	local igor_version=$(cat version.txt)
 
 	local version_result=$("$commands_dir/semver.sh" compare "$remote_version" "$igor_version")
 	if [ $version_result -eq 1 ]; then
 		log IGOR "New version, $remote_version has been detected"
 		echo
-		page_prompt_user_continue "May I continue and install the new version"
+		page_prompt_user_continue "Would you like to continue and install the new version"
 
-		curl -o $download_dir/igor.latest.zip -LOJ https://github.com/willard-pro/igor/archive/refs/heads/main.zip
+		curl -o $download_dir/igor.latest.zip -LOJ https://github.com/willard-pro/igor/releases/download/$remote_version/igor-$remote_version.zip
 		unzip -o $download_dir/igor.latest.zip -d $HOME/.igor
 		mv $HOME/.igor/igor-main/* $HOME/.igor/
 
@@ -176,6 +178,11 @@ function logo_and_banner() {
 	box_key_values["OS"]=$(detect_os)
 
 	print_banner "$config_dir/banner/igor.txt" $igor_banner_color
+
+	if [[ "$development" -eq 1 || "$enhancement" -eq 1 ]]; then
+		print_banner "$config_dir/banner/linux.txt"
+	fi
+
 	print_box box_key_values 
 }
 
@@ -194,6 +201,8 @@ function process_arguments() {
 	        --verbose) 
 				;;
 	        --develop)
+				;;
+			--enhance)
 				;;
 			--help)
 				;;	    	
@@ -263,6 +272,7 @@ function pre_process_arguments() {
 				;;
 	        --develop)
 				development=1
+				env_file="$config_dir/env_dev.json"
 				;;
 			--decrypt)
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
@@ -273,6 +283,9 @@ function pre_process_arguments() {
 			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
 			    	shift 2
 	            fi		    	
+				;;
+			--enhance)
+				enhancement=1
 				;;
 			--help)
 				usage
@@ -303,25 +316,33 @@ function display_modules() {
 	for module_name in $module_names; do
 		log DEBUG "Scanning $module_name"
 
-		local skip
+		local skip=0
 		if [[ $admin -eq 0 && "$module_name" == "module_admin" ]] || [[ $admin -ne 0 && "$module_name" != "module_admin" ]]; then
 		    skip=1
-		else
-		    skip=0
 		fi
 
 	    if [[ skip -eq 0 ]]; then
-	    	if [[ ! -d "$modules_dir/$module_name" ]]; then
-	    		mkdir $modules_dir/$module_name
-	    	fi
+    		if [[ -L $modules_dir/$module_name  ]]; then
+    			rm $modules_dir/$module_name
+    		fi
 
 	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
-	    		log INFO "Copy experimental module from $module_workspace/$module_name"
-
-	    		cp -R $module_workspace/$module_name/* $modules_dir/$module_name
+	    		log INFO "Validating developmental module ${BOLD}$module_name${RESET}"
+	    		run_command "module_admin" "is_valid_module" "$module_workspace/$module_name" 
+	    		if [ $? -eq 0 ]; then
+	    			log INFO "Linking developmental module ${BOLD}$module_name${RESET} from ${BOLD}$module_workspace/$module_name${RESET}"
+	    			ln -s $module_workspace/$module_name $modules_dir/$module_name
+	    		else
+	    			log ERROR "Module $module_name failed basic validation, please have a look at the errors"
+	    		fi
+	    	elif [[ "$module_name" != "module_admin" ]]; then
+	    		log INFO "Linking module ${BOLD}$module_name${RESET}"
+	    		
+		    	local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
+		    	ln -s $module_name@$module_version $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
@@ -343,8 +364,8 @@ function display_modules() {
 	module_count=${#options[@]}
 
 	if [ $module_count -eq 0 ]; then
-		log IGOR "No modules have been installed and/or created"
-		log IGOR "Invoke administrative mode to add and/or create new modules, by running ${BOLD}${YELLOW}igor --admin${RESET}"
+		log IGOR "No modules have been installed"
+		log IGOR "Invoke administrative mode to install modules, by running ${BOLD}${YELLOW}igor --admin${RESET}"
 		exit 1
 	else 
 #
@@ -443,7 +464,7 @@ pre_process_arguments "$@"
 
 validate_igor_home
 
-if [[ development -eq 0 ]]; then
+if [[ "$enhancement" -eq 0 ]]; then
 	cd "$HOME/.igor" || exit
 fi
 
@@ -485,7 +506,7 @@ done
 
 check_igor_commands
 
-if [[ development -eq 1 ]]; then
+if [[ "$development" -eq 1 || "$enhancement" -eq 1 ]]; then
 	log IGOR "Process ID $$"
 	log IGOR "Script values captured during execution are available at ${BOLD}$file_store${RESET}"
 	log IGOR "Commands executed can be found in ${BOLD}$command_dir${RESET}"

@@ -29,6 +29,7 @@ function get_arguments() {
     local -a result_array=()
 
     local arguments=($argument_string)
+    
     for argument in "${arguments[@]}"
     do
         if [[ $argument =~ \$\{value:([^}]+)\} ]]; then
@@ -37,7 +38,7 @@ function get_arguments() {
                 key="page.${page_name}.${key}"
             fi
 
-            result_array+=("${page_prompt_results[$key]}")
+            result_array+=("\"${page_prompt_results[$key]}\"")
         else
             result_array+=("$argument")
         fi

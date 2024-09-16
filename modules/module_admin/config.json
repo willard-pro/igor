@@ -17,71 +17,57 @@
             {
               "name": "Install Module",
               "value": "install",
-              "command": "${page:install_module}"
+              "command": "${page:install_module}",
+              "condition": "!${command:is_development_mode}"
             },
             {
               "name": "Remove Module",
               "value": "remove",
-              "command": "${page:remove_module}"
+              "command": "${page:remove_module}",
+              "condition": "${command:has_modules}"
             },
             {
               "name": "Create Module",
               "value": "create",
-              "command": "${page:create_module}"
+              "command": "${page:create_module}",
+              "condition": "${command:is_development_mode}"
             },
             {
-              "name": "Update Module",
-              "value": "update",
-              "command": "${page:update_module}"
-            },
-            {
-              "name": "Improve Module",
-              "value": "improve",
-              "command": "${page:improve_module}"
+              "name": "Modify Module",
+              "value": "modify",
+              "command": "${page:modify_module}",
+              "condition": "${command:is_development_mode}"
             }
           ]
         }
       ]
     },
     {
-      "name": "improve_module",
-      "label": "Improve Module",
-      "command": "improve_module ${value:prompt.selected_module_improve} ${value:prompt.module_workspace}",
+      "name": "modify_module",
+      "label": "Modify Module",
+      "command": "modify_module ${value:prompt.module_name} ${value:prompt.module_workspace}",
       "prompts": [
-        {
-          "label": "Select module to improve",
-          "name": "selected_module_improve",
-          "options": "${command:get_installed_modules}"
-        },
         {
           "label": "Provide the path to the module source",
           "name": "module_workspace",
           "format": "dir"
+        },
+        {
+          "label": "What is the unique name of the module",
+          "name": "module_name",
+          "format": "string",
+          "validate": {
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
+            }
         },        
         {
-          "label": "Are you sure you want to improve module",
-          "name": "confirm_module_improve",
+          "label": "Are you sure you want to modify module",
+          "name": "confirm_module_modify",
           "format": "continue"
         }
       ]
     },    
-    {
-      "name": "update_module",
-      "label": "Update Module",
-      "command": "update_module ${value:prompt.selected_module_update}",
-      "prompts": [
-        {
-          "label": "Select module to update",
-          "name": "selected_module_update",
-          "options": "${command:get_installed_modules}"
-        },
-        {
-          "label": "Are you sure you want to update module",
-          "name": "confirm_module_update",
-          "format": "continue"
-        }
-      ]
-    },        
     {
       "name": "remove_module",
       "label": "Remove Module",
@@ -116,6 +102,11 @@
               "name": "Zip Archive",
               "value": "zip",
               "command": "${page:install_module_zip}"
+            },
+            {
+              "name": "URL",
+              "value": "url",
+              "command": "${page:install_module_url}"              
             }            
           ]
         }
@@ -131,8 +122,8 @@
           "name": "module_label",
           "format": "string",
           "validate": {
-              "command": "!has_module label ${value:prompt.module_name}",
-              "message": "A module with label ${value:prompt.module_name} already exists"
+              "command": "!has_module label ${value:prompt.this}",
+              "message": "A module with label ${value:prompt.this} already exists"
             }          
         },
         {
@@ -140,8 +131,8 @@
           "name": "module_name",
           "format": "string",
           "validate": {
-              "command": "!has_module name ${value:prompt.module_name}",
-              "message": "A module with name ${value:prompt.module_name} already exists"
+              "command": "!has_module name ${value:prompt.this}",
+              "message": "A module with name ${value:prompt.this} already exists"
             }
         },
         {
@@ -179,6 +170,18 @@
         }
       ]
     },
+    {
+      "name": "install_module_url",
+      "label": "Source Archive",
+      "command": "install_module url ${value:prompt.module_package_source} ",
+      "prompts": [
+        {
+          "label": "Provide the URL to the module(s) source",
+          "name": "module_package_source",
+          "format": "url"
+        }
+      ]
+    },    
     {
       "name": "configure",
       "label": "Module Administration Configuration",

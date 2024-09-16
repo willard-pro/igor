@@ -14,12 +14,12 @@ function log() {
             echo -e "${YELLOW}[WARN]${RESET} $message"
             ;;
         "INFO")
-            if [[ "$debug" -eq 1 || "$development" -eq 1 ]]; then
+            if [[ "$debug" -eq 1 || "$development" -eq 1 || "$enhancement" -eq 1 ]]; then
                 echo -e "${GREEN}[INFO]${RESET} $message"
             fi
             ;;
         "DEBUG")
-            if [ "$debug" -eq 1 ]; then
+            if [[ "$debug" -eq 1 && ("$development" -eq 1 || "$enhancement" -eq 1) ]]; then
                 echo -e "${BLUE}[DEBUG]${RESET} $message"
             fi
             ;;

@@ -158,6 +158,9 @@ function page_prompt_user_question() {
         "file")
             page_prompt_user_file "$prompt_label"
             ;;
+        "url")
+            page_prompt_user_url "$prompt_label"
+            ;;
         "yyyy-mm-dd")
             page_prompt_user_date "$prompt_label" "$prompt_format"
             ;;            
@@ -326,6 +329,25 @@ function page_prompt_user_file() {
     done
 }
 
+function page_prompt_user_url() {
+    local prompt_label=$1
+
+    while true; do
+        read -r -p "$prompt_label: " response
+
+        if is_prompt_back_or_exit "$response"; then
+            break
+        elif is_url "$response"; then            
+            if valid_page_prompt "$response"; then
+                prompt_result=$response
+                break
+            fi
+        else
+            log ERROR "Invalid input. Please enter a valid URL."
+        fi                
+    done
+}
+
 function page_prompt_user_date() {
     local prompt_label="$1"
     local prompt_format="$2"
@@ -370,9 +392,8 @@ function valid_page_prompt() {
         local command_validate_exit_value=$?
 
         local command_validate_result=$(( not_command ^ command_validate_exit_value))
-
         if [  $command_validate_result -ne 0 ]; then
-            log ERROR "$validate_message"
+            log ERROR "${validate_message/\$\{value:prompt.this\}/$prompt_response}"
             return 1
         fi
     fi
@@ -512,6 +533,17 @@ is_file() {
     if [ -f "$value"  ]; then
         return 0
     else
+        return 1
+    fi
+}
+
+# Function to check if input is valid url
+is_url() {
+    local value=$1
+
+    if curl -o /dev/null -s -w "%{http_code}" "$value" | grep -q "^[23]"; then
+        return 0
+    else 
         return 1
     fi
 }
