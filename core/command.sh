@@ -38,13 +38,16 @@ function run_command() {
 
     cp "$config_dir/command_template.sh" "$command_tmp"
 
+    local commands_dir_absolute=$(realpath $commands_dir)
+
     sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s|\$tmp_dir|$tmp_dir|g" $command_tmp
     sed -i "s|\$env_file|$env_file|g" $command_tmp
     sed -i "s|\$timestamp|$timestamp|g" $command_tmp
     sed -i "s|\$file_store|$file_store|g" $command_tmp
     sed -i "s/\$development/$development/g" $command_tmp
-    sed -i "s|\$commands_dir|$commands_dir|g" $command_tmp
+    sed -i "s/\$enhancement/$enhancement/g" $command_tmp
+    sed -i "s|\$commands_dir|$commands_dir_absolute|g" $command_tmp
     sed -i "s/\$igor_environment/$igor_environment/g" $command_tmp
     
 	sed -i "s/\$command/$command/g" $command_tmp
