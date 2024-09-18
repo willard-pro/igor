@@ -34,7 +34,7 @@ function run_command() {
         log DEBUG "Created tempory command script ${BOLD}$command_tmp${RESET} for command ${BOLD}$command${RESET} in module ${BOLD}$module_name${RESET}"
     fi
 
-    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wraped in ${BOLD}$command_tmp${RESET}"
+    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wrapped in ${BOLD}$command_tmp${RESET}"
 
     cp "$config_dir/command_template.sh" "$command_tmp"
 
