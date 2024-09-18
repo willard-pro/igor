@@ -53,7 +53,28 @@ function run_command() {
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp
 	sed -i "s|\$arguments|$arguments|g" $command_tmp
-	
+
+    local variable_names=$(jq -r '.recommended.variables[]?' $modules_dir/$module_name/config.json)
+
+    # Check if the keys are empty
+    if [ -z "$variable_names" ]; then
+        sed -i "s|\$export_variables|#No variables exported|g" $command_tmp
+    else
+        local export_variables=""
+
+        for variable_name in $variable_names; do
+            if [ -n "${!variable_name}" ]; then
+                value="${!variable_name}"
+
+                export_variables+="export $variable_name=$value;"
+            else
+                log INFO "Recommended environment variable $key is not set in the environment."
+            fi
+        done
+
+        sed -i "s|\$export_variables|$export_variables|g" $command_tmp
+    fi
+
 	env -i /bin/bash -c "/bin/bash $command_tmp $arguments"
 	local command_exit_value=$?
 
