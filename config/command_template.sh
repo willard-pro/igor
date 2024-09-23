@@ -6,8 +6,11 @@ env_file=$env_file
 timestamp=$timestamp
 file_store=$file_store
 development=$development
+enhancement=$enhancement
 commands_dir=$commands_dir
 igor_environment=$igor_environment
+
+$export_variables
 
 source lib/log.sh
 source lib/colors.sh

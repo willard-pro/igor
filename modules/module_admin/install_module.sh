@@ -45,9 +45,14 @@ function install_module_from_dir() {
 		log INFO "Installing module ${BOLD}$module_label${RESET} from ${BOLD}$module_path${RESET}"
 
 		local version_result=1
+		local existing_module=false
+
 		jq -e --arg name "$module_name" '.modules[] | select(.name == $name)' "$env_file" > /dev/null
 		if [ $? -eq 0 ]; then
+			existing_module=true
 			local version_exising_module=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' "$env_file")
+
+			log INFO "Version ${BOLD}$version_exising_module${RESET} of module ${BOLD}$module_label${RESET} exists, "
 
 			local version_result=$("$commands_dir/semver.sh" compare "$version_new_module" "$version_exising_module")
 			if [ $version_result -eq 0 ]; then
@@ -64,8 +69,11 @@ function install_module_from_dir() {
 			mkdir "$modules_dir/$module_name@${version_new_module}"
 			cp -R "$module_path"/* "$modules_dir/$module_name@${version_new_module}"
 
-			if [ $version_result -eq 1 ]; then
+			if $existing_module; then
+				jq --arg name "$module_name" --arg version "$version_new_module" '.modules[] |= if .name == $name then .version = $version else . end' $env_file >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+			else
 				local is_configurable=$(jq -r '.module.configurable' "$module_path/config.json")
+
 				if [ "$is_configurable" = "true" ]; then
 				    is_configurable="false"
 				elif [ "$is_configurable" = "false" ]; then
@@ -74,8 +82,6 @@ function install_module_from_dir() {
 
 				local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$is_configurable" '{ "name": $name, "version": $version, "configured": $configured }')
 				jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
-			else
-				jq --arg name "$module_name" --arg version "$version_new_module" '.modules[] |= if .name == $name then .version = $version else . end' input.json
 			fi			
 		fi
 
