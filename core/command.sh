@@ -34,9 +34,11 @@ function run_command() {
         log DEBUG "Created tempory command script ${BOLD}$command_tmp${RESET} for command ${BOLD}$command${RESET} in module ${BOLD}$module_name${RESET}"
     fi
 
-    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wraped in ${BOLD}$command_tmp${RESET}"
+    log DEBUG "Running command ${BOLD}./modules/$module_name/$command.sh $arguments${RESET} wrapped in ${BOLD}$command_tmp${RESET}"
 
     cp "$config_dir/command_template.sh" "$command_tmp"
+
+    local commands_dir_absolute=$(realpath $commands_dir)
 
     sed -i "s/\$debug/$debug/g" $command_tmp
     sed -i "s|\$tmp_dir|$tmp_dir|g" $command_tmp
@@ -44,13 +46,35 @@ function run_command() {
     sed -i "s|\$timestamp|$timestamp|g" $command_tmp
     sed -i "s|\$file_store|$file_store|g" $command_tmp
     sed -i "s/\$development/$development/g" $command_tmp
-    sed -i "s|\$commands_dir|$commands_dir|g" $command_tmp
+    sed -i "s/\$enhancement/$enhancement/g" $command_tmp
+    sed -i "s|\$commands_dir|$commands_dir_absolute|g" $command_tmp
     sed -i "s/\$igor_environment/$igor_environment/g" $command_tmp
     
 	sed -i "s/\$command/$command/g" $command_tmp
 	sed -i "s/\$module/$module_name/g" $command_tmp
 	sed -i "s|\$arguments|$arguments|g" $command_tmp
-	
+
+    local variable_names=$(jq -r '.recommended.variables[]?' $modules_dir/$module_name/config.json)
+
+    # Check if the keys are empty
+    if [ -z "$variable_names" ]; then
+        sed -i "s|\$export_variables|#No variables exported|g" $command_tmp
+    else
+        local export_variables=""
+
+        for variable_name in $variable_names; do
+            if [ -n "${!variable_name}" ]; then
+                value="${!variable_name}"
+
+                export_variables+="export $variable_name=$value;"
+            else
+                log INFO "Recommended environment variable $key is not set in the environment."
+            fi
+        done
+
+        sed -i "s|\$export_variables|$export_variables|g" $command_tmp
+    fi
+
 	env -i /bin/bash -c "/bin/bash $command_tmp $arguments"
 	local command_exit_value=$?
 

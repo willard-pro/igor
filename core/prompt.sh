@@ -405,12 +405,12 @@ function condition_page_prompt() {
     local condition="$1"
 
     if [[ $condition =~ \$\{command:([^}]*)\} ]]; then
-        local command="${BASH_REMATCH[1]}"
-        
-        local command_arguments=$(get_arguments "$command")
-        local command_only="${command%% *}"
+        log DEBUG "Preparing to run condition command ${BOLD}$condition${RESET}"
 
-        run_command "$module_name" "$command_only" ${command_arguments[@]}
+        local command="${BASH_REMATCH[1]}"
+        local command_arguments=$(get_arguments "$condition")
+
+        run_command "$module_name" "$command" ${command_arguments[@]}
         local command_condition_exit_value=$?
 
         local not_command=0

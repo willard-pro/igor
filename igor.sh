@@ -326,7 +326,9 @@ function display_modules() {
     			rm $modules_dir/$module_name
     		fi
 
+		local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
 	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
+
 	    	if [ "$has_workspace" = "true" ]; then
 	    		local module_workspace=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .workspace' $env_file)
 
@@ -340,16 +342,15 @@ function display_modules() {
 	    		fi
 	    	elif [[ "$module_name" != "module_admin" ]]; then
 	    		log INFO "Linking module ${BOLD}$module_name${RESET}"
-	    		
-		    	local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
 		    	ln -s $module_name@$module_version $modules_dir/$module_name
 	    	fi
 
     		if jq empty "$modules_dir/$module_name/config.json" > /dev/null 2>&1; then
 				local module_label=$(jq -r '.module.label' "$modules_dir/$module_name/config.json")
 
-				if [ "$has_workspace" = "true" ]; then
-					module_label="$module_label (*)"
+
+				if [[ "$debug" -eq 1 ]]; then
+					module_label="$module_label ($module_version)"
 				fi
 
 		        # Store module directory and module name in the associative array
