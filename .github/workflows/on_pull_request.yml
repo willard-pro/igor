@@ -72,7 +72,8 @@ jobs:
           VERSION=$(cat version.txt)
           NEW_VERSION="${VERSION%-SNAPSHOT}"
           echo "$NEW_VERSION" version.txt
-          echo "igor_version=$NEW_VERSION" >> $GITHUB_ENV    
+          echo "igor_version=$NEW_VERSION" >> $GITHUB_ENV
+          echo "$NEW_VERSION" > version.txt
       - name: Push new version
         id: push_new_version
         uses: stefanzweifel/git-auto-commit-action@v4

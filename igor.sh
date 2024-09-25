@@ -137,7 +137,7 @@ function update_igor() {
 		mkdir -p "$download_dir"
 	fi
 
-	local remote_version=$(curl -v https://github.com/willard-pro/igor/releases/latest 2>&1 | grep 'location:' | awk -F'tag/' '{print $2}')
+	local remote_version=$(curl -v https://github.com/willard-pro/igor/releases/latest 2>&1 | grep 'location:' | awk -F'tag/' '{print $2}' | tr -d '\r\n')
 	local igor_version=$(cat version.txt)
 
 	local version_result=$("$commands_dir/semver.sh" compare "$remote_version" "$igor_version")
@@ -148,12 +148,6 @@ function update_igor() {
 
 		curl -o $download_dir/igor.latest.zip -LOJ https://github.com/willard-pro/igor/releases/download/$remote_version/igor-$remote_version.zip
 		unzip -o $download_dir/igor.latest.zip -d $HOME/.igor
-		mv $HOME/.igor/igor-main/* $HOME/.igor/
-
-		rm -rf $HOME/.igor/.github
-		rm -rf $HOME/.igor/igor-main
-		rm -rf $HOME/.igor/install.sh
-
 		rm $download_dir/igor.latest.zip
 
 		log IGOR "Sucessfully updated to version $remote_version"
