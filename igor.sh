@@ -326,7 +326,7 @@ function display_modules() {
     			rm $modules_dir/$module_name
     		fi
 
-		    local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
+		local module_version=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .version' $env_file)
 	    	local has_workspace=$(jq --arg name "$module_name" '.modules[] | select(.name == $name) | has("workspace")' $env_file)
 
 	    	if [ "$has_workspace" = "true" ]; then

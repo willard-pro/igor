@@ -23,7 +23,7 @@ else
 		echo -e "\e[31mFailed to download the latest version of Igor.  Please try again later...\e[0m"
 		exit 1
 	else
-		unzip -o /tmp/igor.latest.zip -d $HOME/.igor
+	unzip -o /tmp/igor.latest.zip -d $HOME/.igor
 	fi
 fi
 
@@ -31,10 +31,10 @@ if [[ $? -ne 0 ]]; then
 	echo "\e[31mFailed to extract the latest version of Igor.  Please re-run the script and try again...\e[0m"
 	exit 1
 else
-	echo -e "\e[33mThis script requires sudo permissions to make Igor availabl on the command line path\e[0m"
-	sudo echo "Thank you for granting sudo permissions."
+echo -e "\e[33mThis script requires sudo permissions to make Igor availabl on the command line path\e[0m"
+sudo echo "Thank you for granting sudo permissions."
 
-	sudo ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
+sudo ln -s "$HOME/.igor/igor.sh" /usr/local/bin/igor
 
 	echo -e "Igor is now installed and available on the CLI.  Type \e[1migor\e[0m and hit enter to get started."
 fi
