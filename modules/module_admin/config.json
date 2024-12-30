@@ -92,6 +92,23 @@
       ]
     },
     {
+      "name": "remove_workspace",
+      "label": "Remove Workspace",
+      "command": "remove_workspace ${value:prompt.selected_workspace_remove}",
+      "prompts": [
+        {
+          "label": "Select workspace to remove",
+          "name": "selected_workspace_remove",
+          "options": "${command:get_workspaces}"
+        },
+        {
+          "label": "Are you sure you want to remove workspace",
+          "name": "confirm_workspace_remove",
+          "format": "continue"
+        }
+      ]
+    },        
+    {
       "name": "modules",
       "label": "Modules",
       "prompts": [
