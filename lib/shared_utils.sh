@@ -170,8 +170,8 @@ sort_array_numeric_and_remove_index() {
     local sorted_array
 
     # Sort the array based on the numeric prefix after #
-    IFS=$'\n' sorted_array=($(for item in "${array[@]}"; do echo "$item"; done | sort -t'#' -k2n))
-    
+    IFS=$'\n' sorted_array=$(for item in "${array[@]}"; do echo "$item"; done | sort -t'#' -k2n)
+
     # Remove the numeric prefix and #
     for i in "${!sorted_array[@]}"; do
         sorted_array[$i]=$(echo "${sorted_array[$i]}" | sed 's/^#[0-9]* //')

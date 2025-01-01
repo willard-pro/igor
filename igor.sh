@@ -57,7 +57,10 @@ function create_environment() {
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
 	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 
+	jq '. + { "preferences": [] }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+
 	cp "$env_file" "$config_dir/env_dev.json"
+	jq '. + { "preferences.workspaces": [] }' "$config_dir/env_dev.json" > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$config_dir/env_dev.json"
 }
 
 #
@@ -91,6 +94,11 @@ function create_workspace() {
 #
 function check_igor_commands() {
 	log DEBUG "Check if all required commands are available..."
+	run_command_exists "eval" "${YELLOW} ${BOLD}eval${RESET} command not found. This is required for Igor to function...${RESET}."
+	if [ $? -eq 0 ]; then
+		exit 1
+	fi
+	
 	run_command_exists "curl" "${YELLOW} ${BOLD}curl${RESET} command not found. You will not be able to use Igor's update function...${RESET}."
 	run_command_exists "jq" "${YELLOW} ${BOLD}jq${RESET} command not found. Without it, Igor will be unable to parse the module configuration. Please install jq and try again${RESET}."
 	if [ $? -eq 0 ]; then
