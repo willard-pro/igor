@@ -3,7 +3,7 @@ function check_prerequisists() {
     local default_json="$config_dir/default.json"
 
     check_commands
-    check_checks
+    run_checks
 }
 
 function check_commands() {
@@ -49,7 +49,7 @@ function check_commands() {
     # fi
 }
 
-function check_checks() {
+function run_checks() {
     log DEBUG "Check if all required checks pass..."
 
     # local optional=0
@@ -92,4 +92,42 @@ function check_checks() {
     #     echo -e "${YELLOW}Failed ${RESET}$optional_failed${YELLOW} of the optional ${RESET}$optional${YELLOW} checks, please keep in mind some functionality will not be supported${RESET}."
     #     echo
     # fi      
+}
+
+
+function check_preferences() {
+    local module_name="$1"
+    local page_name
+    local module_path="$modules_dir/$module_name"
+
+    log DEBUG "Check if all required preferences pass..."
+    
+    local mandatory=0
+    local mandatory_failed=0
+
+
+    local hasMandatory=$(echo "$prompt" | jq 'has(".required.preferences")')
+    if [[ $hasMandatory == "true" ]]; then
+        local preferences=$(jq -r '.required.preferences[] | .command' < $module_config | tr -d "'")
+
+        # Loop over the extracted preferences
+        for preference in $preferences; do
+            ((mandatory++))
+
+            # Call the function
+            jq --arg preference "$preferences" '.preferences | has($preference)'
+
+            # Check the exit status of the function
+            if [ $? -eq 1 ]; then
+                ((mandatory_failed++))
+            fi
+        done  
+    fi
+    
+    if [ "$mandatory_failed" -gt 0 ]; then
+        log ERROR "Of the required ${BOLD}$mandatory${RESET} preferences, ${BOLD}$mandatory_failed${RESET} failed, please address them and retry!"
+        exit 1
+    else 
+        log DEBUG "Required preferences passed on module ${BOLD}$module_name${RESET}"
+    fi    
 }

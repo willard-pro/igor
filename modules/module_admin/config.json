@@ -111,6 +111,11 @@
     {
       "name": "modules",
       "label": "Modules",
+      "required": {
+        "preferences": [
+          "workspaces"
+        ] 
+      },
       "prompts": [
         {
           "label": "Select action to take",
