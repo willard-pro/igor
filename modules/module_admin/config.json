@@ -150,9 +150,9 @@
       "command": "modify_module ${value:prompt.module_name} ${value:prompt.module_workspace}",
       "prompts": [
         {
-          "label": "Provide the path to the module source",
+          "label": "Select the work space which contains the module source",
           "name": "module_workspace",
-          "format": "dir"
+          "options": "${command:get_workspaces}"
         },
         {
           "label": "What is the unique name of the module",
@@ -238,9 +238,9 @@
             }
         },
         {
-          "label": "Provide the path where the new module will created and developed",
-          "name": "module_workspace",
-          "format": "dir"
+          "label": "Provide the work space where the new module will be created and developed",
+          "name": "selected_module_remove",
+          "options": "${command:get_workspaces}"          
         }
       ]
     },
