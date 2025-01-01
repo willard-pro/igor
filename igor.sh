@@ -57,8 +57,10 @@ function create_environment() {
 	new_module=$(jq -n --arg name "module_admin" --arg configured "false" '{ "name": $name, "configured": $configured }')
 	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 
+	jq '. + { "preferences": [] }' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+
 	cp "$env_file" "$config_dir/env_dev.json"
-	jq '. + { "workspaces": [] }' "$config_dir/env_dev.json" > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$config_dir/env_dev.json"
+	jq '. + { "preferences.workspaces": [] }' "$config_dir/env_dev.json" > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$config_dir/env_dev.json"
 }
 
 #
