@@ -16,6 +16,8 @@ tmp_dir="tmp"
 timestamp=$(date +"%Y%m%d%H%M%S")
 
 env_file="$config_dir/env.json"
+default_json_file="$config_dir/default.json"
+
 file_store="$tmp_dir/$timestamp/store.txt"
 command_dir="$tmp_dir/$timestamp/commands"
 

@@ -1,7 +1,7 @@
 
-function check_prerequisists() {
-    local default_json="$config_dir/default.json"
 
+
+function check_prerequisists() {
     check_commands
     run_checks
 }
@@ -24,7 +24,7 @@ function check_commands() {
             ((mandatory++))
 
             # Extract the message for the specified command
-            local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json)
+            local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json_file)
 
             # Call the function
             run_command_exists $command "$message"
@@ -95,34 +95,36 @@ function run_checks() {
 }
 
 
+function check_required() {
+    local required="$1"
+    local preferences=$(echo "$required" | jq -r '.preferences[]'  | tr -d "'")
+
+    check_preferences "$preferences"
+}
+
 function check_preferences() {
-    local module_name="$1"
-    local page_name
-    local module_path="$modules_dir/$module_name"
+    local preferences="$1"
 
     log DEBUG "Check if all required preferences pass..."
     
     local mandatory=0
     local mandatory_failed=0
 
+    for preference in $preferences; do
+        ((mandatory++))
 
-    local hasMandatory=$(echo "$prompt" | jq 'has(".required.preferences")')
-    if [[ $hasMandatory == "true" ]]; then
-        local preferences=$(jq -r '.required.preferences[] | .command' < $module_config | tr -d "'")
+        local hasPreference=$(jq --arg preference "$preference" '.preferences[] | has($preference)' < $env_file)
+        if [[ $hasPreference == "true" ]]; then
+            local message=$(jq -r --arg preference "$preference" '.required.preferences[] | select(.preference == $preference) | .message' < $default_json_file)
+            log ERROR "$message"
 
-        # Loop over the extracted preferences
-        for preference in $preferences; do
-            ((mandatory++))
-
-            # Call the function
-            jq --arg preference "$preferences" '.preferences | has($preference)'
-
-            # Check the exit status of the function
-            if [ $? -eq 1 ]; then
-                ((mandatory_failed++))
-            fi
-        done  
-    fi
+            exit 1
+        fi
+        # Check the exit status of the function
+        # if [ $? -eq 1 ]; then
+        #     ((mandatory_failed++))
+        # fi
+    done  
     
     if [ "$mandatory_failed" -gt 0 ]; then
         log ERROR "Of the required ${BOLD}$mandatory${RESET} preferences, ${BOLD}$mandatory_failed${RESET} failed, please address them and retry!"
