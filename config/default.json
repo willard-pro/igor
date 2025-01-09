@@ -56,7 +56,7 @@
 		"preferences": [
 			{
 				"preference": "workspaces",
-				"message": "${RED} Preference ${BOLD}workspaces${RESET} is empty. Please add a workspace and try again${RESET}."
+				"message": "Preference ${BOLD}workspaces${RESET} is empty. Please add a workspace and try again."
 			}
 		]
 	}

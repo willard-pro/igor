@@ -119,7 +119,6 @@ function page_prompts() {
             # Check if there is required commands, preferences, etc... assigned to the prompt, if the required checks fail then an error message is displayed
             if [ -v prompt_required ]; then
                 check_required "$prompt_required"
-              exit 1
             fi
 
             log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"

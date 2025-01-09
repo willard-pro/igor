@@ -115,15 +115,21 @@ function check_preferences() {
 
         local hasPreference=$(jq --arg preference "$preference" '.preferences[] | has($preference)' < $env_file)
         if [[ $hasPreference == "true" ]]; then
-            local message=$(jq -r --arg preference "$preference" '.required.preferences[] | select(.preference == $preference) | .message' < $default_json_file)
-            log ERROR "$message"
+            local preference_is_array=$(jq --arg preference "$preference" '.preferences[] | has($preference) and (.[ $preference ] | type == "array")'  < $env_file )
 
-            exit 1
+            if [[ $preference_is_array == "true" ]]; then
+                hasPreference=$(jq --arg preference "$preference" '.preferences[] | (.[ $preference ] | length > 0)' < $env_file)
+            fi
         fi
-        # Check the exit status of the function
-        # if [ $? -eq 1 ]; then
-        #     ((mandatory_failed++))
-        # fi
+
+        if [[ $hasPreference == "false" ]]; then
+            ((mandatory_failed++))
+
+            local message=$(jq -r --arg preference "$preference" '.required.preferences[] | select(.preference == $preference) | .message' < $default_json_file  | tr -d "'")
+            eval "local expanded_message=\"$message\""
+
+            log IGOR "$expanded_message"
+        fi
     done  
     
     if [ "$mandatory_failed" -gt 0 ]; then
