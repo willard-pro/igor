@@ -56,7 +56,6 @@ function page_prompt_user_options() {
     local prompt_options_array=()
 
     if [[ "$sort_options" == "asc" ]]; then
-        sort_array "${page_prompt_options[@]}"
         sorted_prompt_options=$(sort_array "${page_prompt_options[@]}")
         while IFS= read -r line; do prompt_options_array+=("$line"); done <<< "$sorted_prompt_options"
     elif [[ "$sort_options" == "none" ]]; then
