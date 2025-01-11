@@ -24,10 +24,16 @@ function decrypt() {
 }
 
 
+#
+ # Returns the current environment
+#
 function environment_get() {
     echo "$igor_environment"
 }
 
+#
+ # Returns true if the current environment matches the provided environment
+#
 function environment_match() {
 	local environment_name="$1"
 
@@ -38,6 +44,9 @@ function environment_match() {
     fi
 }
 
+#
+ # Constructs JSON object from the options provided.  The options provided needs to be an associative array
+#
 function build_options() {
      local -n options=$1
 
@@ -170,8 +179,8 @@ sort_array_numeric_and_remove_index() {
     local sorted_array
 
     # Sort the array based on the numeric prefix after #
-    IFS=$'\n' sorted_array=($(for item in "${array[@]}"; do echo "$item"; done | sort -t'#' -k2n))
-    
+    IFS=$'\n' sorted_array=$(for item in "${array[@]}"; do echo "$item"; done | sort -t'#' -k2n)
+
     # Remove the numeric prefix and #
     for i in "${!sorted_array[@]}"; do
         sorted_array[$i]=$(echo "${sorted_array[$i]}" | sed 's/^#[0-9]* //')

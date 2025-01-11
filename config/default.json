@@ -52,6 +52,12 @@
 				"command": "liquibase",
 				"message": "${YELLOW} ${BOLD}liquibase${RESET} command not found. Please install liquibase (https://docs.liquibase.com/start/install/home.html) and try again${RESET}."
 			}
+		],
+		"preferences": [
+			{
+				"preference": "workspaces",
+				"message": "Preference ${BOLD}workspaces${RESET} is empty. Please add a workspace and try again."
+			}
 		]
 	}
 }

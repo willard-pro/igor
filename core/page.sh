@@ -65,6 +65,7 @@ function page_prompts() {
 
             local prompt_name=$(echo "$prompt" | jq -r '.name')
 
+            # Check if there is a condition assigned to the prompt, if the condition fails then the prompt is not displayed
             local has_condition=$(echo "$prompt" | jq 'has("condition")')
             if [[ $has_condition == "true" ]]; then
                 local prompt_condition=$(echo "$prompt" | jq -r '.condition')
@@ -87,6 +88,11 @@ function page_prompts() {
                     if [[ $has_command == "true" ]]; then
                         local prompt_command=$(echo "$prompt" | jq -r --arg value "$prompt_result" '.options[] | select(.value == $value) | .command')
                     fi
+
+                    local has_required=$(echo "$prompt" | jq --arg value "$prompt_result" '.options[] | select(.value == $value) | has("required")')
+                    if [[ $has_required == "true" ]]; then
+                        local prompt_required=$(echo "$prompt" | jq -r --arg value "$prompt_result" '.options[] | select(.value == $value) | .required')
+                    fi     
                 fi
             else 
                 local has_format=$(echo "$prompt" | jq 'has("format")')
@@ -101,8 +107,18 @@ function page_prompts() {
                         if [[ $has_command == "true" ]]; then
                             local prompt_command=$(echo "$prompt" | jq '.command')
                         fi
+
+                        local has_required=$(echo "$prompt" | jq 'has("required")')
+                        if [[ $has_required == "true" ]]; then
+                            local prompt_required=$(echo "$prompt" | jq -r '.required')
+                        fi                        
                     fi
                 fi
+            fi
+
+            # Check if there is required commands, preferences, etc... assigned to the prompt, if the required checks fail then an error message is displayed
+            if [ -v prompt_required ]; then
+                check_required "$prompt_required"
             fi
 
             log DEBUG "Saving prompt result ${BOLD}$prompt_result${RESET} to ${BOLD}page.$page_name.prompt.$prompt_name${RESET}"

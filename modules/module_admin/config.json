@@ -12,28 +12,135 @@
       "prompts": [
         {
           "label": "Select action to take",
+          "name": "module_admin_action",
+          "options": [
+            {
+              "name": "Modules",
+              "value": "modules",
+              "command": "${page:modules}"
+            },
+            {
+              "name": "Preferences",
+              "value": "preferences",
+              "command": "${page:preferences}",
+              "condition": "${command:is_development_mode}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "preferences",
+      "label": "Preferences",
+      "prompts": [
+        {
+          "label": "Select action to take",
+          "name": "preference_action",
+          "options": [
+            {
+              "name": "Workspaces",
+              "value": "workspaces",
+              "command": "${page:workspaces}",
+              "condition": "${command:is_development_mode}"
+            }
+          ]
+        }
+      ]
+    }, 
+    {
+      "name": "workspaces",
+      "label": "Workspaces",
+      "prompts": [
+        {
+          "label": "Select action to take",
+          "name": "workspace_action",
+          "options": [
+            {
+              "name": "Add",
+              "value": "add",
+              "command": "${page:add_workspace}"
+            },
+            {
+              "name": "Remove",
+              "value": "remove",
+              "command": "${page:remove_workspace}",
+              "condition": "${command:has_workspaces}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add_workspace",
+      "label": "Add Workspace",
+      "command": "add_workspace ${value:prompt.workspace_name} ${value:prompt.workspace_source}",
+      "prompts": [
+        {
+          "label": "Provide unique name for the workspace",
+          "name": "workspace_name",
+          "format": "string",
+          "validate": {
+              "command": "!has_workspace name ${value:prompt.this}",
+              "message": "A workspace with name ${value:prompt.this} already exists"
+            }
+        },
+        {
+          "label": "Provide the path to the source workspace",
+          "name": "workspace_source",
+          "format": "dir"
+        }
+      ]
+    },
+    {
+      "name": "remove_workspace",
+      "label": "Remove Workspace",
+      "command": "remove_workspace ${value:prompt.selected_workspace_remove}",
+      "prompts": [
+        {
+          "label": "Select workspace to remove",
+          "name": "selected_workspace_remove",
+          "options": "${command:get_workspaces} name"
+        },
+        {
+          "label": "Are you sure you want to remove workspace",
+          "name": "confirm_workspace_remove",
+          "format": "continue"
+        }
+      ]
+    },        
+    {
+      "name": "modules",
+      "label": "Modules",
+      "prompts": [
+        {
+          "label": "Select action to take",
           "name": "module_action",
           "options": [
             {
-              "name": "Install Module",
+              "name": "Install",
               "value": "install",
               "command": "${page:install_module}",
               "condition": "!${command:is_development_mode}"
             },
             {
-              "name": "Remove Module",
+              "name": "Remove",
               "value": "remove",
               "command": "${page:remove_module}",
               "condition": "${command:has_modules}"
             },
             {
-              "name": "Create Module",
+              "name": "Create",
               "value": "create",
               "command": "${page:create_module}",
-              "condition": "${command:is_development_mode}"
+              "condition": "${command:is_development_mode}",
+              "required": {
+                "preferences": [
+                  "workspaces"
+                ] 
+              }
             },
             {
-              "name": "Modify Module",
+              "name": "Modify",
               "value": "modify",
               "command": "${page:modify_module}",
               "condition": "${command:is_development_mode}"
@@ -48,9 +155,9 @@
       "command": "modify_module ${value:prompt.module_name} ${value:prompt.module_workspace}",
       "prompts": [
         {
-          "label": "Provide the path to the module source",
+          "label": "Select the work space which contains the module source",
           "name": "module_workspace",
-          "format": "dir"
+          "options": "${command:get_workspaces}"
         },
         {
           "label": "What is the unique name of the module",
@@ -136,9 +243,9 @@
             }
         },
         {
-          "label": "Provide the path where the new module will created and developed",
+          "label": "Provide the work space where the new module will be created and developed",
           "name": "module_workspace",
-          "format": "dir"
+          "options": "${command:get_workspaces}"          
         }
       ]
     },
