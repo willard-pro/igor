@@ -1,9 +1,9 @@
 
-function check_prerequisists() {
-    local default_json="$config_dir/default.json"
 
+
+function check_prerequisists() {
     check_commands
-    check_checks
+    run_checks
 }
 
 function check_commands() {
@@ -24,7 +24,7 @@ function check_commands() {
             ((mandatory++))
 
             # Extract the message for the specified command
-            local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json)
+            local message=$(jq -r --arg command "$command" '.required.commands[] | select(.command == $command) | .message' < $default_json_file)
 
             # Call the function
             run_command_exists $command "$message"
@@ -49,7 +49,7 @@ function check_commands() {
     # fi
 }
 
-function check_checks() {
+function run_checks() {
     log DEBUG "Check if all required checks pass..."
 
     # local optional=0
@@ -92,4 +92,50 @@ function check_checks() {
     #     echo -e "${YELLOW}Failed ${RESET}$optional_failed${YELLOW} of the optional ${RESET}$optional${YELLOW} checks, please keep in mind some functionality will not be supported${RESET}."
     #     echo
     # fi      
+}
+
+
+function check_required() {
+    local required="$1"
+    local preferences=$(echo "$required" | jq -r '.preferences[]'  | tr -d "'")
+
+    check_preferences "$preferences"
+}
+
+function check_preferences() {
+    local preferences="$1"
+
+    log DEBUG "Check if all required preferences pass..."
+    
+    local mandatory=0
+    local mandatory_failed=0
+
+    for preference in $preferences; do
+        ((mandatory++))
+
+        local hasPreference=$(jq --arg preference "$preference" '.preferences[] | has($preference)' < $env_file)
+        if [[ $hasPreference == "true" ]]; then
+            local preference_is_array=$(jq --arg preference "$preference" '.preferences[] | has($preference) and (.[ $preference ] | type == "array")'  < $env_file )
+
+            if [[ $preference_is_array == "true" ]]; then
+                hasPreference=$(jq --arg preference "$preference" '.preferences[] | (.[ $preference ] | length > 0)' < $env_file)
+            fi
+        fi
+
+        if [[ $hasPreference == "false" ]]; then
+            ((mandatory_failed++))
+
+            local message=$(jq -r --arg preference "$preference" '.required.preferences[] | select(.preference == $preference) | .message' < $default_json_file  | tr -d "'")
+            eval "local expanded_message=\"$message\""
+
+            log IGOR "$expanded_message"
+        fi
+    done  
+    
+    if [ "$mandatory_failed" -gt 0 ]; then
+        log ERROR "Of the required ${BOLD}$mandatory${RESET} preferences, ${BOLD}$mandatory_failed${RESET} failed, please address them and retry!"
+        exit 1
+    else 
+        log DEBUG "Required preferences passed on module ${BOLD}$module_name${RESET}"
+    fi    
 }

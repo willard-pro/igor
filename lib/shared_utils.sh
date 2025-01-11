@@ -24,10 +24,16 @@ function decrypt() {
 }
 
 
+#
+ # Returns the current environment
+#
 function environment_get() {
     echo "$igor_environment"
 }
 
+#
+ # Returns true if the current environment matches the provided environment
+#
 function environment_match() {
 	local environment_name="$1"
 
@@ -38,6 +44,9 @@ function environment_match() {
     fi
 }
 
+#
+ # Constructs JSON object from the options provided.  The options provided needs to be an associative array
+#
 function build_options() {
      local -n options=$1
 
