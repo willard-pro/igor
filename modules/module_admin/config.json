@@ -99,7 +99,7 @@
         {
           "label": "Select workspace to remove",
           "name": "selected_workspace_remove",
-          "options": "${command:get_workspaces}"
+          "options": "${command:get_workspaces} name"
         },
         {
           "label": "Are you sure you want to remove workspace",
@@ -244,7 +244,7 @@
         },
         {
           "label": "Provide the work space where the new module will be created and developed",
-          "name": "selected_module_remove",
+          "name": "module_workspace",
           "options": "${command:get_workspaces}"          
         }
       ]
