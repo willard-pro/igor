@@ -144,6 +144,11 @@
               "value": "modify",
               "command": "${page:modify_module}",
               "condition": "${command:is_development_mode}"
+            },
+            {
+              "name": "Reset",
+              "value": "reset",
+              "command": "${page:reset_module}"
             }
           ]
         }
@@ -188,6 +193,23 @@
         {
           "label": "Are you sure you want to remove module",
           "name": "confirm_module_remove",
+          "format": "continue"
+        }
+      ]
+    },    
+    {
+      "name": "reset_module",
+      "label": "Reset Module",
+      "command": "reset_module ${value:prompt.selected_module_reset}",
+      "prompts": [
+        {
+          "label": "Select module to reset",
+          "name": "selected_module_reset",
+          "options": "${command:get_installed_modules}"
+        },
+        {
+          "label": "Are you sure you want to reset module",
+          "name": "confirm_module_reset",
           "format": "continue"
         }
       ]
