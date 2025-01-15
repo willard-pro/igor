@@ -1,14 +1,15 @@
 #!/bin/bash
 
 debug=$debug
-tmp_dir=$tmp_dir
-env_file=$env_file
 timestamp=$timestamp
-file_store=$file_store
 development=$development
 enhancement=$enhancement
-commands_dir=$commands_dir
 igor_environment=$igor_environment
+
+tmp_dir="$PWD/$tmp_dir"
+env_file="$PWD/$env_file"
+file_store="$PWD/$file_store"
+commands_dir="$PWD/$commands_dir"
 
 $export_variables
 
