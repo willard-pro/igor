@@ -76,7 +76,15 @@ function get_configuration_property() {
     local module_name="$1"
     local property_name="$2"
 
-    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$key]' "$env_file")
+    local format=$(jq -r --arg name "$module_name" '.modules[] | select(.name == $name) | .configuration.format' "$env_file")
+    if [[ "$format" == "single" ]]; then
+        local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$key]' "$env_file")
+    elif [[ "$format" == "multi" ]]; then
+        local result=$(jq -r --arg name "$module_name" --arg env "$igor_environment" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$env].[$key]' "$env_file")
+    else
+      exit 1
+    fi
+    
     echo "$result"
 }
 

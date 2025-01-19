@@ -3,7 +3,7 @@
     "name": "module_admin",
     "label": "Dr Frankenstein",
     "type": "bash",
-    "configurable": "true"
+    "configurable": "single"
   },
   "pages": [
     {

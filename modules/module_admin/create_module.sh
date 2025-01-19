@@ -21,7 +21,7 @@ function create_module() {
     sed -i "s/\$name/$module_name/g" $config_file
     sed -i "s|\$label|$module_label|g" $config_file
 
-	local new_module=$(jq -n --arg name "$module_name" --arg workspace "$module_workspace" --arg version "$version_new_module" --arg configured "true" '{ "name": $name, "workspace": $workspace, "version": $version, "configuration": {  "configured": $configured } }')
+	local new_module=$(jq -n --arg name "$module_name" --arg workspace "$module_workspace" --arg version "$version_new_module" --arg configured "true" '{ "name": $name, "workspace": $workspace, "version": $version, "configuration": {  "format": "none", "configured": $configured } }')
 	jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 
 	log IGOR "Module ${BOLD}$module_label${RESET} has been created and is ready for development.  Remember to start Igor in ${BOLD}development${RESET} mode. ${YELLOW}igor --develop${RESET}"

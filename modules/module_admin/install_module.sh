@@ -72,16 +72,24 @@ function install_module_from_dir() {
 			if $existing_module; then
 				jq --arg name "$module_name" --arg version "$version_new_module" '.modules[] |= if .name == $name then .version = $version else . end' $env_file >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 			else
-			local is_configurable=$(jq -r '.module.configurable' "$module_path/config.json")
+				local is_configurable=$(jq -r '.module.configurable' "$module_path/config.json")
 
-			if [ "$is_configurable" = "true" ]; then
-			    is_configurable="false"
-			elif [ "$is_configurable" = "false" ]; then
-			    is_configurable="true"
-			fi
+				if [ "$is_configurable" = "multi" ]; then
+					local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg env "$igor_environment" '{ "name": $name, "version": $version, "configuration": {  $env: { "configured": "false" } } }')
+				else
+					local module_configured="true"
 
-			local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$is_configurable" '{ "name": $name, "version": $version, "configuration": {  "configured": $configured } }')
-			jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
+					if [ "$is_configurable" = "single" ]; then
+					    module_configured="false"
+					elif [ "$is_configurable" != "none" ]; then
+						log ERROR "Configurable mode ${BOLD}$is_configurable${RESET} is not supported, valid options are [none, single, multi]"
+						exit 1
+					fi
+
+					local new_module=$(jq -n --arg name "$module_name" --arg version "$version_new_module" --arg configured "$module_configured" '{ "name": $name, "version": $version, "configuration": {  "configured": $configured } }')
+				fi
+
+				jq --argjson new_module "$new_module" '.modules += [$new_module]' "$env_file" >> "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" "$env_file"
 			fi			
 		fi
 
