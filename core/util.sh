@@ -58,7 +58,7 @@ function has_configuration_property() {
     local module_name="$1"
     local property_name="$2"
 
-    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configured' "$env_file")
+    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$key]' "$env_file")
     echo "$result"
 }
 
@@ -83,7 +83,7 @@ function set_configurtion_property() {
     local property_name="$2"
     local property_value="$3"
 
-    jq --arg name "$module_name" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then . + {($key): $value} else . end)' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
+    jq --arg name "$module_name" --arg key "$property_name" --arg value "$property_value" '.modules |= map(if .name == $name then .configuration[$key] = $value else . end)' $env_file > "$tmp_dir/env.tmp" && mv "$tmp_dir/env.tmp" $env_file
 
     log DEBUG "Updated environment configuration for module ${BOLD}$module_name${RESET} setting property ${BOLD}$property_name${RESET}=${BOLD}$property_value${RESET}"
 }

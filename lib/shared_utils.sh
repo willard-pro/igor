@@ -76,7 +76,7 @@ function get_configuration_property() {
     local module_name="$1"
     local property_name="$2"
 
-    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .[$key]' "$env_file")
+    local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$key]' "$env_file")
     echo "$result"
 }
 
