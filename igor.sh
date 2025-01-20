@@ -250,6 +250,23 @@ function process_arguments() {
 	                exit 1
 	            fi		    	
 				;;
+			--env)
+				if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+					local argument_env="$2"
+					shift 2
+
+					if [[ "$enhancement" -eq 1 || "$develop" -eq 1 ]]; then
+						log WARN "Overriding ${BOLD}$igor_environment${RESET} environment and setting environment to ${BOLD}$argument_env${RESET}"
+						igor_environment=$argument_env
+					else
+						log ERROR "To override the default environment please start Igor in either development or enhancement mode"
+						exit 1
+					fi					
+	            else
+	                log ERROR "Missing text after --env option [local, uat, demo, prod]"
+	                exit 1
+	            fi		    	
+				;;				
 	        --update) 
 				update_igor
 				;;
@@ -262,8 +279,10 @@ function process_arguments() {
  # By default Igor expects no flags, but some are supported
  #
  # The folowing flags are supported
- #  --debug (enabe debug logging)
+ #  --verbose (enabe debug logging)
  #  --develop (enable development mode)
+ #  --enhance (enable local execution while applying code changes to igor)
+ #  --env=<environment> (only available in combination with --enhance)
 #
 function pre_process_arguments() {
 	while [[ "$#" -gt 0 ]]; do
@@ -290,6 +309,11 @@ function pre_process_arguments() {
 				;;
 			--enhance)
 				enhancement=1
+				;;
+			--env)
+			    if [[ -n "$2" && ${2:0:1} != "-" ]]; then
+			    	shift 2
+	            fi		    	
 				;;
 			--help)
 				usage
