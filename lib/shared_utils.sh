@@ -80,7 +80,7 @@ function get_configuration_property() {
     if [[ "$format" == "single" ]]; then
         local result=$(jq -r --arg name "$module_name" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$key]' "$env_file")
     elif [[ "$format" == "multi" ]]; then
-        local result=$(jq -r --arg name "$module_name" --arg env "$igor_environment" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$env].[$key]' "$env_file")
+        local result=$(jq -r --arg name "$module_name" --arg env "$igor_environment" --arg key "$property_name" '.modules[] | select(.name == $name) | .configuration[$env][$key]' "$env_file")
     else
       exit 1
     fi
